@@ -3,6 +3,9 @@ import { Picture } from 'astro:assets';
 import SectionHead from './SectionHead.astro';
 import photo from '../assets/portrait-ucla.jpg';
 import { offClock } from '../data/site';
+
+// Short list, so repeat it to fill the ticker without gaps
+const ticker = [...offClock, ...offClock, ...offClock];
 ---
 
 <section id="about" class="section" aria-labelledby="about-h">
@@ -37,9 +40,9 @@ import { offClock } from '../data/site';
         brought me to UCLA Anderson and into product management.
       </p>
       <p>
-        Outside work I write poetry (some of it published) and the occasional song, which is a big
-        part of why I'm drawn to product roles in tech, media and creative tools: places where
-        technical depth and taste both matter.
+        Outside work I'm a published poet and a musician, which is a big part of why I'm drawn to
+        product roles in tech, media and creative tools: places where technical depth and taste
+        both matter.
       </p>
       <p>
         Always happy to talk with fellow builders, writers, or anyone figuring out their own pivot.
@@ -53,7 +56,7 @@ import { offClock } from '../data/site';
       {
         [0, 1].map((copy) => (
           <ul aria-hidden={copy === 1 ? 'true' : undefined}>
-            {offClock.map((item) => (
+            {ticker.map((item) => (
               <li>
                 {item}
                 <span class="sep" aria-hidden="true">

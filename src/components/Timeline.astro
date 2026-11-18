@@ -29,31 +29,49 @@ const { id, n, label, title, entries } = Astro.props;
               aria-label={e.logo.alt}
               style={`--logo: url('${e.logo.src}'); aspect-ratio: ${e.logo.ratio};`}
             />
-            <p class="when mono">
-              {e.current && <span class="live">Current</span>}
-              {e.when}
-            </p>
+            {e.when && (
+              <p class="when mono">
+                {e.current && <span class="live">Current</span>}
+                {e.when}
+              </p>
+            )}
             <p class="place mono">{e.place}</p>
           </div>
 
-          <div class="body" data-reveal>
-            <h3>{e.org}</h3>
-            {e.roles && (
-              <ol class="roles" aria-label="Roles">
-                {e.roles.map((r) => (
-                  <li>
-                    <span class="role">{r.title}</span>
-                    <span class="mono">{r.dates}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-            <p class="summary">{e.summary}</p>
-            <ul class="points">
-              {e.points.map((p) => (
-                <li>{p}</li>
-              ))}
-            </ul>
+          <div class="body">
+            <div data-reveal>
+              <h3>{e.org}</h3>
+              {e.roles && (
+                <ol class="roles" aria-label="Roles, most recent first">
+                  {e.roles.map((r, i) => (
+                    <li class:list={{ latest: i === 0 }}>
+                      <span class="role">{r.title}</span>
+                      <span class="dates mono">{r.dates}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {e.summary && <p class="summary">{e.summary}</p>}
+              {e.points && (
+                <ul class="points">
+                  {e.points.map((p) => (
+                    <li>{p}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {e.groups?.map((g) => (
+              <div class="group" data-reveal>
+                <span class="dot sub" data-timeline-dot aria-hidden="true" />
+                <h4 class="mono">{g.heading}</h4>
+                <ul class="points">
+                  {g.points.map((p) => (
+                    <li>{p}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </li>
       ))
@@ -128,15 +146,19 @@ const { id, n, label, title, entries } = Astro.props;
   /* Logos drawn in one colour from the palette; they brighten on hover */
   .logo {
     display: block;
-    height: 28px;
-    max-width: 170px;
+    height: 30px;
+    max-width: 180px;
     background: var(--muted);
     -webkit-mask: var(--logo) left center / contain no-repeat;
     mask: var(--logo) left center / contain no-repeat;
-    transition: background-color 0.3s var(--ease-out);
+    transform-origin: left center;
+    transition:
+      background-color 0.3s var(--ease-out),
+      transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .entry:hover .logo {
     background: var(--ink);
+    transform: scale(1.18);
   }
   .when {
     margin: 16px 0 4px;
@@ -164,35 +186,59 @@ const { id, n, label, title, entries } = Astro.props;
     letter-spacing: -0.03em;
   }
 
-  /* Role progression shown as a small promotion path */
+  /* Roles stacked like the resume: title left, exact dates right */
   .roles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0 0 16px;
+    max-width: 720px;
+    margin: 0 0 8px;
     padding: 0;
     list-style: none;
+    border-top: 1px solid var(--line);
   }
   .roles li {
-    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: baseline;
-    gap: 8px;
-    padding: 6px 12px;
-    border: 1px solid var(--line);
+    gap: 4px 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .roles li.latest {
+    color: var(--ink);
+  }
+  .roles li.latest .role::after {
+    content: 'Most recent';
+    margin-left: 10px;
+    padding: 3px 8px;
     border-radius: 999px;
-    font-size: 0.85rem;
-  }
-  .roles li:last-child {
-    border-color: var(--accent);
-    background: color-mix(in oklch, var(--accent) 12%, transparent);
-  }
-  .roles li + li::before {
-    content: '→';
-    margin-right: 2px;
+    background: color-mix(in oklch, var(--accent) 16%, transparent);
     color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: 2px;
   }
-  .roles .mono {
-    font-size: 0.66rem;
+  .dates {
+    font-size: 0.7rem;
+  }
+
+  /* Resume sub-sections, each with its own dot on the rail */
+  .group {
+    position: relative;
+    margin-top: clamp(28px, 3.5vw, 40px);
+  }
+  .dot.sub {
+    top: 2px;
+    left: calc(-40px - 6px);
+    width: 11px;
+    height: 11px;
+  }
+  h4 {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-weight: 500;
   }
 
   .summary {
@@ -254,9 +300,8 @@ const { id, n, label, title, entries } = Astro.props;
     .body {
       padding-left: 0;
     }
-    .roles {
-      flex-direction: column;
-      align-items: flex-start;
+    .dot.sub {
+      left: calc(-34px + 1px);
     }
   }
 </style>

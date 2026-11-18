@@ -1,12 +1,56 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const fields = [
+  ['Status', "Won't fix"],
+  ['Priority', 'P4 · Lowest'],
+  ['Reporter', 'You'],
+  ['Assignee', 'Kalash Jain'],
+  ['Sprint', 'Never'],
+  ['Labels', 'descoped, wrong-turn'],
+];
 ---
 
-<Base title="Not found · Kalash Jain">
+<Base title="404 · Page not found · Kalash Jain">
   <main class="nf">
-    <p class="mono">Error 404 / Page not found</p>
-    <h1>Nothing here (yet).</h1>
-    <a href="/">Back to the start →</a>
+    <article class="ticket" aria-labelledby="t-title">
+      <header>
+        <p class="mono key"><span class="type">Bug</span> KJ-404</p>
+        <h1 id="t-title">Page not found</h1>
+      </header>
+
+      <dl class="fields">
+        {
+          fields.map(([k, v]) => (
+            <div>
+              <dt class="mono">{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <section class="desc">
+        <h2 class="mono">Steps to reproduce</h2>
+        <ol>
+          <li>Typed or followed a link to a page that doesn't exist</li>
+          <li>Ended up here</li>
+        </ol>
+        <p><strong>Expected:</strong> a page. <strong>Actual:</strong> this ticket.</p>
+      </section>
+
+      <section class="comment">
+        <p class="mono">Kalash Jain · resolved</p>
+        <p>
+          Descoped in sprint planning. Everything that matters is on one page anyway, so this one
+          never made the roadmap.
+        </p>
+      </section>
+
+      <span class="stamp" aria-hidden="true">Won't fix</span>
+    </article>
+
+    <a class="btn btn-primary" href="/">Take me to the homepage →</a>
   </main>
 </Base>
 
@@ -15,18 +59,127 @@ import Base from '../layouts/Base.astro';
     min-height: 100svh;
     display: grid;
     place-content: center;
-    gap: 16px;
-    padding: 0 var(--gutter);
+    justify-items: center;
+    gap: 32px;
+    padding: 48px var(--gutter);
+  }
+
+  .ticket {
+    position: relative;
+    width: min(100%, 560px);
+    padding: clamp(24px, 4vw, 36px);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: 0 30px 60px -30px oklch(0 0 0 / 0.5);
+    animation: drop-in 0.7s var(--ease-out) both;
+  }
+  .key {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+  }
+  .type {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: color-mix(in oklch, oklch(0.65 0.2 25) 22%, transparent);
+    color: oklch(0.72 0.17 25);
   }
   h1 {
-    margin: 0;
+    margin: 0 0 24px;
     font-family: var(--font-display);
-    font-size: clamp(2.25rem, 7vw, 5rem);
+    font-size: clamp(2rem, 6vw, 3rem);
     line-height: 1;
     letter-spacing: -0.04em;
   }
-  a {
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 24px;
+    margin: 0 0 24px;
+    padding: 18px 0;
+    border-block: 1px solid var(--line);
+  }
+  dt {
+    font-size: 0.62rem;
+    margin-bottom: 2px;
+  }
+  dd {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .desc h2 {
+    margin: 0 0 8px;
+    font-size: 0.68rem;
+    font-weight: 400;
+  }
+  .desc ol {
+    margin: 0 0 10px;
+    padding-left: 20px;
+    color: var(--muted);
+  }
+  .desc p,
+  .comment p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .desc strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .comment {
+    margin-top: 20px;
+    padding: 14px 16px;
+    border-left: 2px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    background: color-mix(in oklch, var(--accent) 8%, transparent);
+  }
+  .comment .mono {
+    margin-bottom: 6px;
     color: var(--accent);
-    text-underline-offset: 4px;
+  }
+
+  /* The rubber stamp lands a beat after the ticket */
+  .stamp {
+    position: absolute;
+    top: 26px;
+    right: 22px;
+    padding: 8px 14px;
+    border: 3px solid oklch(0.66 0.2 25);
+    border-radius: 8px;
+    color: oklch(0.66 0.2 25);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    rotate: -12deg;
+    opacity: 0.9;
+    mix-blend-mode: normal;
+    animation: stamp 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) 0.8s both;
+  }
+
+  @keyframes drop-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px) rotate(1deg);
+    }
+  }
+  @keyframes stamp {
+    from {
+      opacity: 0;
+      scale: 2.4;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stamp {
+      top: 18px;
+      right: 14px;
+      font-size: 0.85rem;
+    }
   }
 </style>

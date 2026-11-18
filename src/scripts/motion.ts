@@ -84,8 +84,20 @@ if (!reduce) {
   });
 }
 
-/* Cursor spotlight on cards (pure CSS variables, mouse only) */
+/* Mouse-only touches */
 if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  // Buttons lean toward the cursor
+  if (!reduce) {
+    document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((b) => {
+      b.addEventListener('pointermove', (e) => {
+        const r = b.getBoundingClientRect();
+        b.style.translate = `${(e.clientX - r.left - r.width / 2) * 0.25}px ${(e.clientY - r.top - r.height / 2) * 0.35}px`;
+      });
+      b.addEventListener('pointerleave', () => (b.style.translate = ''));
+    });
+  }
+
+  // Cursor spotlight on cards (pure CSS variables)
   document.querySelectorAll<HTMLElement>('[data-spotlight]').forEach((card) => {
     card.addEventListener('pointermove', (e) => {
       const r = card.getBoundingClientRect();

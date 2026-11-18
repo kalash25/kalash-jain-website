@@ -46,5 +46,32 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body>
     <slot />
+    <p class="toast" role="status" aria-live="polite" data-toast></p>
+
+    <script>
+      /* Site-wide toast: window.dispatchEvent(new CustomEvent('toast', { detail: 'Hi' })) */
+      const toast = document.querySelector<HTMLElement>('[data-toast]');
+      let timer = 0;
+      addEventListener('toast', (e) => {
+        if (!toast) return;
+        toast.textContent = (e as CustomEvent<string>).detail;
+        toast.classList.add('show');
+        clearTimeout(timer);
+        timer = window.setTimeout(() => toast.classList.remove('show'), 2400);
+      });
+
+      /* Tab title nudge when someone switches away */
+      const title = document.title;
+      document.addEventListener('visibilitychange', () => {
+        document.title = document.hidden ? '← Your next PM intern is in this tab' : title;
+      });
+
+      /* A note for anyone who opens DevTools */
+      console.log(
+        '%cHey, you opened the console.%c\nThat kind of curiosity is exactly what I look for in a team. Say hi: kalashjain@g.ucla.edu',
+        'font: 600 14px system-ui; color: #9f8cff',
+        'font: 12px system-ui',
+      );
+    </script>
   </body>
 </html>

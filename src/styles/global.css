@@ -67,6 +67,35 @@ section[id] {
 }
 
 /* ------------------------------------------------------------------
+   Toast (one for the whole site; fire with a 'toast' event)
+------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 90;
+  margin: 0;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  translate: -50% 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s var(--ease-out),
+    translate 0.4s var(--ease-out);
+}
+.toast.show {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+/* ------------------------------------------------------------------
    Buttons
 ------------------------------------------------------------------- */
 .btn {
@@ -84,7 +113,8 @@ section[id] {
   transition:
     border-color 0.25s var(--ease-out),
     background-color 0.25s var(--ease-out),
-    transform 0.25s var(--ease-out);
+    transform 0.25s var(--ease-out),
+    translate 0.3s var(--ease-out);
 }
 .btn:hover {
   border-color: var(--accent);

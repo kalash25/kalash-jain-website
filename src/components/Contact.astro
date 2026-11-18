@@ -6,7 +6,7 @@ import { links } from '../data/site';
 const channels = [
   { label: 'LinkedIn', note: 'linkedin.com/in/kalash-jain', href: links.linkedin },
   { label: 'GitHub', note: 'github.com/kalash25', href: links.github },
-  { label: 'Resume', note: 'One page, PDF', href: links.resume, download: true },
+  { label: 'Resume', note: 'One page, ruthlessly prioritized', href: links.resume, download: true },
 ];
 ---
 
@@ -44,7 +44,6 @@ const channels = [
     }
   </ul>
 
-  <p class="toast mono" role="status" aria-live="polite" data-toast></p>
 </section>
 
 <style>
@@ -119,28 +118,6 @@ const channels = [
     transform: translate(3px, -3px);
   }
 
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: 28px;
-    z-index: 60;
-    margin: 0;
-    padding: 12px 18px;
-    border-radius: 999px;
-    background: var(--ink);
-    color: var(--bg);
-    translate: -50% 20px;
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.3s var(--ease-out),
-      translate 0.4s var(--ease-out);
-  }
-  .toast:global(.show) {
-    opacity: 1;
-    translate: -50% 0;
-  }
-
   @media (max-width: 560px) {
     .note {
       display: none;
@@ -151,22 +128,16 @@ const channels = [
 <script>
   const btn = document.querySelector<HTMLButtonElement>('[data-copy]');
   const label = btn?.querySelector('[data-copy-label]');
-  const toast = document.querySelector<HTMLElement>('[data-toast]');
-  let timer = 0;
+  const say = (detail: string) => dispatchEvent(new CustomEvent('toast', { detail }));
 
   btn?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(btn.dataset.copy!);
-      if (toast) toast.textContent = 'Email copied. Talk soon ✦';
-      if (label) label.textContent = 'Copied';
+      say('Copied. My inbox is ready when you are');
+      if (label) label.textContent = 'Copied ✓';
+      setTimeout(() => label && (label.textContent = 'Copy email'), 2400);
     } catch {
-      if (toast) toast.textContent = 'Could not copy. The address is right there ↑';
+      say('Could not copy. The address is right there ↑');
     }
-    toast?.classList.add('show');
-    clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      toast?.classList.remove('show');
-      if (label) label.textContent = 'Copy email';
-    }, 2200);
   });
 </script>

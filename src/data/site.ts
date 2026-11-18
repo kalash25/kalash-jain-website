@@ -9,36 +9,56 @@ export const links = {
 
 export type Logo = { src: string; ratio: number; alt: string };
 export type Role = { title: string; dates: string };
+export type Group = { heading: string; points: string[] };
 export type Entry = {
   org: string;
   logo: Logo;
   place: string;
-  when: string;
+  when?: string;
   roles?: Role[];
-  summary: string;
-  points: string[];
+  summary?: string;
+  points?: string[];
+  groups?: Group[];
   current?: boolean;
 };
 
+// Mirrors the resume: roles with exact dates, then the three sub-sections
 export const experience: Entry[] = [
   {
     org: 'JPMorgan Chase & Co.',
     logo: { src: '/logos/jpmorganchase.svg', ratio: 1000 / 141.83, alt: 'JPMorganChase' },
     place: 'Mumbai & Bangalore, India',
-    when: '2022 – 2026',
     roles: [
-      { title: 'Software Engineer Intern', dates: '2022' },
-      { title: 'Software Development Engineer I', dates: '2023 – 2025' },
-      { title: 'Software Development Engineer II', dates: '2026' },
+      { title: 'Software Development Engineer II (Associate)', dates: 'Jan 2026 – Jun 2026' },
+      { title: 'Software Development Engineer I (Analyst)', dates: 'Aug 2023 – Dec 2025' },
+      { title: 'Software Engineer Intern', dates: 'Jan 2022 – Jun 2022' },
     ],
-    summary:
-      'Worked on the testing, automation and data tools used by trading and operations teams, and partnered closely with those teams to get them adopted.',
-    points: [
-      'Co-designed a pre-release testing platform for trade bookings, used across 10+ business lines',
-      'Proposed consolidating five overlapping booking tools into one, got senior leadership sign-off, and delivered it end to end',
-      'Led the migration of ~800 data feeds to AWS alongside accounting, settlement, credit risk and regulatory teams',
-      'Ran sprints as Scrum Master for a 20-person team for a year',
-      'Won 1st place among 500+ participants in the firm-wide hackathon',
+    groups: [
+      {
+        heading: 'Product Strategy & Ownership',
+        points: [
+          'Co-designed a pre-release testing platform after a faulty code change sent wrong data to regulators; reached 10,000+ daily trade scenarios across 10+ businesses, catching 3–4 high-impact bugs',
+          'Championed replacing 5 booking tools sharing 70–80% duplicate code with one tool, ending reliance on an external team; refined with product and tech leads and won senior leadership approval',
+          'Delivered the new tool end-to-end and retired all 5 old tools, cutting new business-line onboarding from 1 month to 2 days; lowered failed bookings 30%, trimmed booking time 25%, and unlocked 40% of untested scenarios',
+          'Reduced false test failures from ~30% to ~1% by proposing a new way to compare test results, approved by the product lead; exposed a previously hidden cross-business code break',
+        ],
+      },
+      {
+        heading: 'Execution & Adoption',
+        points: [
+          "Integrated missing trade-confirmation data into test results to unblock our main stakeholder's adoption; authored the approval proposal and onboarded 10+ business lines in under a week each",
+          'Scaled test bookings from ~1/hour to 2,000/hour by mapping manual flows with ops across 4 business units and automating 99% with their sign-off; saved 800+ hours per release, keeping 2 migrations on schedule',
+          'Scoped and shipped 9 complex deal types with ops, required by 95% of test scenarios; launched a self-serve spreadsheet upload for bulk scenario creation, turning 10 minutes per scenario into 3,000+ per upload',
+        ],
+      },
+      {
+        heading: 'Cross-Functional Leadership',
+        points: [
+          'Partnered with accounting, settlement, credit risk and regulatory teams to own migration of ~800 feeds to AWS; automated parity checks exposing long-running data errors in 15–20% of feeds, secured sign-off and sped delivery 20%',
+          'Collaborated with our product lead on backlog priorities and cleared blockers to minimize spillover by running sprints as Scrum Master for a 20-person team over a year',
+          'Surveyed risk teams building inconsistent dashboards to find their most-used charts; built a self-serve, customizable chart library, shrinking build time from ~1 day to under an hour for 5 pilot teams',
+        ],
+      },
     ],
   },
 ];
@@ -90,15 +110,8 @@ export const projects = [
   },
 ];
 
-// Draggable stickers on the hero photo (decorative; the same facts are in the text)
+// Draggable stickers next to the hero photo (decorative; the same facts are in the text)
 export const stickers = ['ex-JPMorgan Chase', "UCLA Anderson MBA '28", 'published poet ✎', 'builds with AI'];
 
 // Off-the-clock marquee
-export const offClock = [
-  'Published poet',
-  'Writes the occasional song',
-  'Builds personal apps with AI',
-  'Former Editor-in-Chief',
-  'State-level junior basketball',
-  'Hackathon winner',
-];
+export const offClock = ['Published poet', 'Musician', 'Building apps with AI'];

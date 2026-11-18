@@ -10,11 +10,11 @@ const letters = [...name];
 <section class="hero" id="top" data-hero>
   <div class="copy">
     <p class="mono eyebrow reveal" style="--d:0">
-      Engineer <span class="accent">→</span> Product · UCLA Anderson MBA '28
+      UCLA Anderson MBA '28 <span class="accent">·</span> ex-JPMorgan Chase
     </p>
 
     <div class="name-block">
-      <h1 class="name" aria-label={name}>
+      <h1 class="name" aria-label={name} data-name>
         {
           letters.map((ch, i) => (
             <span class="letter-mask" aria-hidden="true">
@@ -31,25 +31,24 @@ const letters = [...name];
     </div>
 
     <p class="line reveal" style="--d:1">
-      Engineer by training.<br />
-      <em>Product person in the making.</em>
+      Product thinker<br />
+      <em>with an engineer's toolkit.</em>
     </p>
 
     <div class="lede reveal" style="--d:2">
       <p>
         I spent three years as a software engineer at JPMorgan Chase, building testing and
-        automation tools and working closely with the teams who used them. Now I'm at UCLA Anderson,
-        moving into product management in tech, media and creative tools.
+        automation tools and getting the teams who used them on board. At UCLA Anderson, I'm focused
+        on product management in tech, media and creative tools.
       </p>
-      <p>
-        Off the clock, I write poetry (some of it published), the occasional song, and small apps
-        for myself.
-      </p>
+      <p>Off the clock: published poet, musician, and builder of small apps with AI.</p>
     </div>
 
     <div class="ctas reveal" style="--d:3">
-      <a class="btn btn-primary" href="#experience">See my experience <span aria-hidden="true">↓</span></a>
-      <a class="btn" href={links.resume} download>Download resume</a>
+      <a class="btn btn-primary" href="#experience" data-magnetic
+        >See my experience <span aria-hidden="true">↓</span></a
+      >
+      <a class="btn" href={links.resume} download data-magnetic>Download resume</a>
     </div>
 
     <p class="status mono reveal" style="--d:4">
@@ -59,7 +58,8 @@ const letters = [...name];
   </div>
 
   <div class="media">
-    <div class="frame" data-frame>
+    <div class="frame">
+      <div class="tilt" data-tilt>
       <figure class="photo">
         <Picture
           src={portrait}
@@ -71,16 +71,19 @@ const letters = [...name];
           fetchpriority="high"
         />
       </figure>
+      </div>
 
-      {
-        stickers.map((s, i) => (
-          <span class={`sticker s${i + 1}`} style={`--i:${i}`} data-sticker aria-hidden="true">
-            {s}
-          </span>
-        ))
-      }
+      <div class="sheet" aria-hidden="true">
+        {
+          stickers.map((s, i) => (
+            <span class={`sticker s${i + 1}`} style={`--i:${i}`} data-sticker>
+              {s}
+            </span>
+          ))
+        }
+      </div>
     </div>
-    <p class="hint mono" aria-hidden="true">↑ the stickers move</p>
+    <p class="hint mono" aria-hidden="true">(go on, drag them anywhere)</p>
   </div>
 </section>
 
@@ -127,7 +130,16 @@ const letters = [...name];
     padding-bottom: 0.06em;
   }
   .letter {
+    --h: 0;
     display: inline-block;
+    translate: 0 calc(var(--h) * -0.1em);
+    color: color-mix(in oklch, var(--accent) calc(var(--h) * 100%), var(--ink));
+  }
+  :global(.js.intro-done) .letter {
+    transition:
+      transform 0.9s var(--ease-out) calc(var(--i) * 38ms),
+      translate 0.35s var(--ease-out),
+      color 0.35s var(--ease-out);
   }
   .wave {
     display: block;
@@ -211,6 +223,12 @@ const letters = [...name];
     position: relative;
     width: min(100%, 400px);
   }
+  .tilt {
+    --rx: 0deg;
+    --ry: 0deg;
+    transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.5s var(--ease-out);
+  }
   .photo {
     margin: 0;
     aspect-ratio: 4 / 5;
@@ -254,30 +272,35 @@ const letters = [...name];
       scale 0.25s var(--ease-out),
       box-shadow 0.25s var(--ease-out);
   }
+  .sheet {
+    position: relative;
+    height: 108px;
+    margin-top: 20px;
+  }
   .sticker.s1 {
-    --r: -7deg;
-    top: 9%;
-    left: -10%;
+    --r: -6deg;
+    top: 4px;
+    left: 0;
   }
   .sticker.s2 {
-    --r: 5deg;
-    top: 44%;
-    right: -12%;
+    --r: 4deg;
+    top: 0;
+    left: 46%;
     background: var(--accent);
     color: var(--accent-ink);
   }
   .sticker.s3 {
-    --r: 4deg;
-    bottom: 22%;
-    left: -8%;
+    --r: 3deg;
+    top: 56px;
+    left: 9%;
     background: var(--surface);
     color: var(--ink);
     border: 1px solid var(--line);
   }
   .sticker.s4 {
-    --r: -4deg;
-    bottom: 6%;
-    right: -6%;
+    --r: -5deg;
+    top: 52px;
+    left: 55%;
   }
   .sticker:hover {
     --lift: 1.05;
@@ -370,16 +393,20 @@ const letters = [...name];
       font-size: 0.72rem;
       padding: 7px 11px;
     }
-    /* keep stickers off the face on the narrow photo */
-    .sticker.s1 {
-      top: 3%;
+    .sheet {
+      width: min(86vw, 340px);
+      height: 92px;
     }
     .sticker.s2 {
-      top: 52%;
-      right: -30%;
+      left: 50%;
     }
     .sticker.s3 {
-      bottom: 14%;
+      top: 48px;
+      left: 4%;
+    }
+    .sticker.s4 {
+      top: 46px;
+      left: 52%;
     }
     .name-block {
       margin-top: 8px;
@@ -515,14 +542,14 @@ const letters = [...name];
   } else reveal();
 
   /* ---------------------------------------------------------------
-     Draggable stickers: pick one up, drop it anywhere near the photo.
+     Draggable stickers: pick one up and drop it anywhere in the hero.
   ---------------------------------------------------------------- */
   document.querySelectorAll<HTMLElement>('[data-sticker]').forEach((el) => {
     let x = 0;
     let y = 0;
     let sx = 0;
     let sy = 0;
-    const LIMIT = 160; // how far a sticker can wander from its spot
+    let bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
 
     // Once it has popped in, drop the entrance delay so hover/drag feel instant
     el.addEventListener('transitionend', () => el.classList.add('settled'), { once: true });
@@ -532,11 +559,20 @@ const letters = [...name];
       el.classList.add('dragging', 'settled');
       sx = e.clientX - x;
       sy = e.clientY - y;
+      // Allowed travel = from where it is now to each edge of the hero
+      const h = hero.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      bounds = {
+        minX: x - (r.left - h.left),
+        maxX: x + (h.right - r.right),
+        minY: y - (r.top - h.top),
+        maxY: y + (h.bottom - r.bottom),
+      };
     });
     el.addEventListener('pointermove', (e) => {
       if (!el.hasPointerCapture(e.pointerId)) return;
-      x = Math.max(-LIMIT, Math.min(LIMIT, e.clientX - sx));
-      y = Math.max(-LIMIT, Math.min(LIMIT, e.clientY - sy));
+      x = Math.max(bounds.minX, Math.min(bounds.maxX, e.clientX - sx));
+      y = Math.max(bounds.minY, Math.min(bounds.maxY, e.clientY - sy));
       el.style.setProperty('--x', `${x}px`);
       el.style.setProperty('--y', `${y}px`);
     });
@@ -544,4 +580,31 @@ const letters = [...name];
     el.addEventListener('pointerup', drop);
     el.addEventListener('pointercancel', drop);
   });
+
+  /* Mouse-only touches: photo tilt, and name letters that lift near the cursor */
+  if (!reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const tilt = document.querySelector<HTMLElement>('[data-tilt]');
+    tilt?.addEventListener('pointermove', (e) => {
+      const r = tilt.getBoundingClientRect();
+      tilt.style.setProperty('--ry', `${((e.clientX - r.left) / r.width - 0.5) * 10}deg`);
+      tilt.style.setProperty('--rx', `${-((e.clientY - r.top) / r.height - 0.5) * 10}deg`);
+    });
+    tilt?.addEventListener('pointerleave', () => {
+      tilt.style.setProperty('--rx', '0deg');
+      tilt.style.setProperty('--ry', '0deg');
+    });
+
+    const name = document.querySelector<HTMLElement>('[data-name]');
+    const letters = [...(name?.querySelectorAll<HTMLElement>('.letter') ?? [])];
+    name?.addEventListener('pointermove', (e) => {
+      for (const l of letters) {
+        const r = l.getBoundingClientRect();
+        const d = Math.abs(e.clientX - (r.left + r.width / 2)) / r.width;
+        l.style.setProperty('--h', Math.max(0, 1 - d / 1.6).toFixed(2));
+      }
+    });
+    name?.addEventListener('pointerleave', () =>
+      letters.forEach((l) => l.style.setProperty('--h', '0')),
+    );
+  }
 </script>

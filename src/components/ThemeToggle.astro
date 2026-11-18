@@ -61,6 +61,11 @@
   btn?.addEventListener('click', () => {
     const next = root.dataset.theme === 'light' ? 'dark' : 'light';
     root.dataset.theme = next;
+    dispatchEvent(
+      new CustomEvent('toast', {
+        detail: next === 'light' ? 'Light mode. Bold choice ☀︎' : 'Welcome back to the dark side',
+      }),
+    );
     try {
       localStorage.setItem('theme', next);
     } catch {}
