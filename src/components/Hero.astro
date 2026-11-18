@@ -1,0 +1,520 @@
+---
+import { Picture } from 'astro:assets';
+import portrait from '../assets/portrait-dark.webp';
+
+const name = 'Kalash Jain';
+const letters = [...name];
+---
+
+<section class="hero" id="top" data-hero>
+  <div class="copy">
+    <p class="mono eyebrow reveal" style="--d:0">
+      Engineer <span class="accent">→</span> Product · UCLA Anderson MBA '28
+    </p>
+
+    <div class="name-block">
+      <h1 class="name" aria-label={name}>
+        {
+          letters.map((ch, i) => (
+            <span class="letter-mask" aria-hidden="true">
+              <span class="letter" style={`--i:${i}`}>
+                {ch === ' ' ? ' ' : ch}
+              </span>
+            </span>
+          ))
+        }
+      </h1>
+      <svg class="wave" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+        <path data-wave d="M0 60 L1000 60"></path>
+      </svg>
+    </div>
+
+    <p class="line reveal" style="--d:1">
+      Built things right.<br />
+      Now building <em>the right things.</em>
+    </p>
+
+    <p class="lede reveal" style="--d:2">
+      Three years as a software engineer at JPMorgan Chase, where I pushed to replace five
+      booking tools with one and cut new-team onboarding from a month to two days. Now at UCLA
+      Anderson, moving into product. Off the clock: published poet, lead singer, guitarist.
+    </p>
+
+    <div class="ctas reveal" style="--d:3">
+      <a class="btn btn-primary" href="#work">See my work <span aria-hidden="true">↓</span></a>
+      <a class="btn" href="/resume/Kalash-Jain-Resume.pdf" download>Download resume</a>
+    </div>
+
+    <p class="status mono reveal" style="--d:4">
+      <span class="dot" aria-hidden="true"></span>
+      Recruiting for Summer '27 PM internships · tech, media & music
+    </p>
+  </div>
+
+  <div class="media">
+    <div class="record-wrap" data-tilt>
+      <div class="vinyl" aria-hidden="true">
+        <div class="vinyl-label"><span>KJ</span></div>
+      </div>
+      <figure class="cover">
+        <Picture
+          src={portrait}
+          formats={['avif', 'webp']}
+          widths={[360, 560, 820]}
+          sizes="(max-width: 820px) 70vw, 420px"
+          alt="Portrait of Kalash Jain"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <figcaption class="mono">Side A · Kalash Jain</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 72px);
+    min-height: 100svh;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 112px var(--gutter) 72px;
+    /* the record slides past the edge; never let it cause sideways scroll */
+    overflow-x: clip;
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+
+  /* ---------- name + waveform ---------- */
+  .name-block {
+    display: inline-flex;
+    flex-direction: column;
+    max-width: 100%;
+    margin: 14px 0 22px;
+  }
+  .name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variation-settings: 'opsz' 96;
+    font-size: clamp(3rem, 8.4vw, 7.25rem);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+  .letter-mask {
+    display: inline-block;
+    overflow: clip;
+    overflow-clip-margin: 0.12em;
+    padding-bottom: 0.06em;
+  }
+  .letter {
+    display: inline-block;
+  }
+  .wave {
+    display: block;
+    width: 100%;
+    height: clamp(34px, 5vw, 64px);
+    margin-top: 4px;
+    overflow: visible;
+    cursor: crosshair;
+  }
+  .wave path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* ---------- positioning ---------- */
+  .line {
+    margin: 0 0 18px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-variation-settings: 'opsz' 48;
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+  }
+  .line em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .lede {
+    max-width: 54ch;
+    margin: 0 0 28px;
+    font-size: clamp(1rem, 1.25vw, 1.1rem);
+    color: var(--muted);
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 26px;
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: ping 2.4s var(--ease-out) infinite;
+  }
+  @keyframes ping {
+    0% {
+      box-shadow: 0 0 0 0 var(--accent);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 10px transparent;
+    }
+  }
+
+  /* ---------- album cover + vinyl ---------- */
+  .media {
+    display: flex;
+    justify-content: center;
+    padding-right: 18%;
+  }
+  .record-wrap {
+    --rx: 0deg;
+    --ry: 0deg;
+    position: relative;
+    width: min(100%, 420px);
+    aspect-ratio: 1;
+    transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.5s var(--ease-out);
+  }
+  .cover {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow:
+      0 30px 60px -20px oklch(0 0 0 / 0.55),
+      0 0 0 1px color-mix(in oklch, var(--ink) 8%, transparent);
+  }
+  .cover :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+  /* A violet wash at the bottom so the photo belongs to the palette */
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      color-mix(in oklch, var(--accent) 38%, transparent),
+      transparent 45%
+    );
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+  figcaption {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    z-index: 2;
+    color: oklch(0.97 0.006 285 / 0.85);
+    font-size: 0.65rem;
+  }
+
+  .vinyl {
+    position: absolute;
+    top: 3%;
+    left: 0;
+    width: 94%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, transparent 0 31%, oklch(0 0 0 / 0) 31%),
+      repeating-radial-gradient(
+        circle,
+        oklch(0.13 0.01 285) 0 2px,
+        oklch(0.19 0.012 285) 2px 3px
+      );
+    box-shadow:
+      0 20px 40px -18px oklch(0 0 0 / 0.6),
+      inset 0 0 0 1px oklch(1 0 0 / 0.06);
+    transform: translateX(0) rotate(0deg);
+    transition: transform 1.2s var(--ease-out);
+  }
+  /* Light sheen across the grooves */
+  .vinyl::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 30deg,
+      transparent 0 20%,
+      oklch(1 0 0 / 0.1) 25%,
+      transparent 30% 70%,
+      oklch(1 0 0 / 0.08) 75%,
+      transparent 80%
+    );
+  }
+  .vinyl-label {
+    position: absolute;
+    inset: 34%;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--bg) 0 5%, var(--accent) 5.5%);
+    animation: spin 6s linear infinite;
+    animation-play-state: paused;
+  }
+  .vinyl-label span {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(0.8rem, 1.4vw, 1.1rem);
+    color: var(--accent-ink);
+    translate: 0 -120%;
+  }
+  .record-wrap:hover .vinyl-label {
+    animation-play-state: running;
+  }
+  @keyframes spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  /* ---------- intro choreography ---------- */
+  :global(.js) .letter {
+    transform: translateY(110%);
+    transition: transform 0.9s var(--ease-out);
+    transition-delay: calc(var(--i) * 38ms);
+  }
+  :global(.js) .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.8s var(--ease-out),
+      transform 0.8s var(--ease-out);
+    transition-delay: calc(0.25s + var(--d) * 0.1s);
+  }
+  :global(.js) .eyebrow.reveal {
+    transition-delay: 0s;
+  }
+  :global(.js) .cover {
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      opacity 0.9s var(--ease-out),
+      transform 1s var(--ease-out);
+    transition-delay: 0.15s;
+  }
+  :global(.js.intro-done) .letter,
+  :global(.js.intro-done) .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  :global(.js.intro-done) .cover {
+    opacity: 1;
+    transform: none;
+  }
+  /* Record slides out from behind the sleeve once the intro lands */
+  :global(.intro-done) .vinyl {
+    transform: translateX(34%) rotate(160deg);
+    transition-delay: 0.6s;
+  }
+  .record-wrap:hover .vinyl {
+    transform: translateX(40%) rotate(200deg);
+    transition-delay: 0s;
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 820px) {
+    .hero {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      padding-top: 100px;
+      min-height: auto;
+    }
+    .media {
+      order: -1;
+      justify-content: flex-start;
+      padding-right: 0;
+    }
+    .record-wrap {
+      width: min(58vw, 260px);
+    }
+    :global(.intro-done) .vinyl {
+      transform: translateX(30%) rotate(160deg);
+    }
+    .name-block {
+      margin-top: 8px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vinyl-label,
+    .dot {
+      animation: none;
+    }
+    .record-wrap {
+      transform: none !important;
+    }
+  }
+</style>
+
+<script>
+  /* ---------------------------------------------------------------
+     Waveform intro
+     1. A flat line draws across and swells into an audio-like wave.
+     2. The name rises out of its mask as the wave peaks; the rest follows.
+     3. The wave settles to a quiet idle and leans toward the cursor.
+     Click or any key skips. Reduced motion: static and instant.
+  ---------------------------------------------------------------- */
+  const root = document.documentElement;
+  const path = document.querySelector<SVGPathElement>('[data-wave]');
+  const svg = path?.ownerSVGElement;
+  const hero = document.querySelector<HTMLElement>('[data-hero]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const W = 1000;
+  const MID = 60;
+  const N = 180;
+  const INTRO_MS = 1900;
+  const REVEAL_AT = 900;
+  const IDLE_AMP = 0.14;
+
+  let start = performance.now();
+  let revealed = false;
+  let pointerX = -1;
+  let pointerAmp = 0;
+  let pulse = 0;
+  let raf = 0;
+  let heroVisible = true;
+
+  const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+  function reveal() {
+    if (revealed) return;
+    revealed = true;
+    root.classList.add('intro-done');
+  }
+
+  function skip() {
+    if (performance.now() - start >= INTRO_MS) return;
+    start = performance.now() - INTRO_MS;
+    reveal();
+  }
+
+  function shape(t: number, amp: number, drawn: number) {
+    let d = '';
+    const last = Math.max(1, Math.round(N * drawn));
+    for (let i = 0; i <= last; i++) {
+      const x = i / N;
+      const env = Math.pow(Math.sin(Math.PI * x), 1.4);
+      const s =
+        Math.sin(x * 38 + t * 0.0062) * 0.5 +
+        Math.sin(x * 91 - t * 0.0094) * 0.3 +
+        Math.sin(x * 17 + t * 0.0031) * 0.2;
+      let a = amp + pulse * env;
+      if (pointerX >= 0) a += pointerAmp * Math.exp(-Math.pow((x - pointerX) / 0.09, 2));
+      const y = MID - s * env * a * (MID - 6);
+      d += `${i === 0 ? 'M' : 'L'}${(x * W).toFixed(1)} ${y.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  function frame(now: number) {
+    const e = now - start;
+    let amp = IDLE_AMP;
+    let drawn = 1;
+    if (e < INTRO_MS) {
+      drawn = easeOut(clamp(e / 500));
+      const swell = easeOut(clamp((e - 250) / 550));
+      const settle = clamp((e - 1100) / 800);
+      amp = swell * (1 - settle) + IDLE_AMP * settle;
+      if (e >= REVEAL_AT) reveal();
+    } else reveal();
+
+    pointerAmp += ((pointerX >= 0 ? 0.85 : 0) - pointerAmp) * 0.08;
+    pulse *= 0.94;
+    path!.setAttribute('d', shape(now, amp, drawn));
+
+    // Stop drawing once the hero is off screen and the intro is over
+    if (heroVisible || e < INTRO_MS) raf = requestAnimationFrame(frame);
+    else raf = 0;
+  }
+  const run = () => {
+    if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
+  };
+
+  // Content must never wait on animation frames
+  setTimeout(reveal, INTRO_MS);
+
+  if (path && svg) {
+    if (reduce) {
+      path.setAttribute('d', shape(0, IDLE_AMP, 1));
+      reveal();
+    } else {
+      run();
+      addEventListener('keydown', skip, { once: true });
+      addEventListener('pointerdown', skip, { once: true });
+
+      hero.addEventListener('pointermove', (ev) => {
+        const r = svg.getBoundingClientRect();
+        const x = (ev.clientX - r.left) / r.width;
+        const nearY = ev.clientY > r.top - 80 && ev.clientY < r.bottom + 80;
+        pointerX = nearY && x >= -0.05 && x <= 1.05 ? clamp(x) : -1;
+      });
+      hero.addEventListener('pointerleave', () => (pointerX = -1));
+      svg.addEventListener('click', () => (pulse = 0.8));
+
+      new IntersectionObserver(([e]) => {
+        heroVisible = e.isIntersecting;
+        if (heroVisible) run();
+      }).observe(hero);
+
+      document.addEventListener('visibilitychange', () => {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        run();
+      });
+    }
+  } else reveal();
+
+  /* Gentle 3D tilt on the album cover (mouse only) */
+  const tilt = document.querySelector<HTMLElement>('[data-tilt]');
+  if (tilt && !reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    tilt.addEventListener('pointermove', (e) => {
+      const r = tilt.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      tilt.style.setProperty('--ry', `${px * 10}deg`);
+      tilt.style.setProperty('--rx', `${-py * 10}deg`);
+    });
+    tilt.addEventListener('pointerleave', () => {
+      tilt.style.setProperty('--ry', '0deg');
+      tilt.style.setProperty('--rx', '0deg');
+    });
+  }
+</script>

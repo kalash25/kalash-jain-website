@@ -1,0 +1,289 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+// Sections are numbered like tracks on an album
+const links = [
+  { n: '01', label: 'Work', href: '#work' },
+  { n: '02', label: 'Experience', href: '#experience' },
+  { n: '03', label: 'About', href: '#about' },
+  { n: '04', label: 'Contact', href: '#contact' },
+];
+---
+
+<header class="nav" data-nav>
+  <div class="bar">
+    <a class="brand" href="#top" aria-label="Kalash Jain, back to top">
+      <svg viewBox="0 0 40 20" aria-hidden="true">
+        <path d="M1 10h5l3-7 5 14 5-16 5 15 4-9 3 3h8"></path>
+      </svg>
+      <span>Kalash Jain</span>
+    </a>
+
+    <nav aria-label="Sections">
+      <ul class="links" id="nav-links">
+        {
+          links.map((l) => (
+            <li>
+              <a href={l.href} data-nav-link>
+                <span class="n" aria-hidden="true">{l.n}</span>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <a class="btn btn-small" href="/resume/Kalash-Jain-Resume.pdf" download>
+        Resume <span aria-hidden="true">↓</span>
+      </a>
+      <ThemeToggle />
+      <button class="menu" type="button" aria-expanded="false" aria-controls="nav-links" data-menu>
+        <span class="sr-only">Menu</span>
+        <span class="menu-lines" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scroll progress, styled as a playback scrubber -->
+  <div class="scrubber" aria-hidden="true">
+    <div class="scrubber-fill"></div>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background: color-mix(in oklch, var(--bg) 72%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 64px;
+    padding: 0 var(--gutter);
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .brand svg {
+    width: 28px;
+    height: 14px;
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.8s var(--ease-out);
+  }
+  .brand:hover svg {
+    animation: redraw 0.9s var(--ease-out);
+  }
+  @keyframes redraw {
+    from {
+      stroke-dashoffset: 80;
+    }
+  }
+
+  .links {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .links a {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.92rem;
+    color: var(--muted);
+    transition:
+      color 0.25s var(--ease-out),
+      background-color 0.25s var(--ease-out);
+  }
+  .links a:hover,
+  .links a[aria-current='true'] {
+    color: var(--ink);
+  }
+  .links a[aria-current='true'] {
+    background: color-mix(in oklch, var(--accent) 14%, transparent);
+  }
+  .n {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .menu {
+    display: none;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .menu-lines,
+  .menu-lines::before {
+    display: block;
+    width: 16px;
+    height: 1.5px;
+    margin: 0 auto;
+    background: currentColor;
+    transition: transform 0.3s var(--ease-out);
+  }
+  .menu-lines {
+    transform: translateY(-3px);
+  }
+  .menu-lines::before {
+    content: '';
+    transform: translateY(6px);
+  }
+  .menu[aria-expanded='true'] .menu-lines {
+    transform: rotate(45deg);
+  }
+  .menu[aria-expanded='true'] .menu-lines::before {
+    transform: rotate(-90deg);
+  }
+
+  .scrubber {
+    height: 1px;
+    background: var(--line);
+  }
+  .scrubber-fill {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(var(--progress, 0));
+  }
+
+  @media (max-width: 820px) {
+    .brand span {
+      display: none;
+    }
+    .menu {
+      display: grid;
+      place-items: center;
+    }
+    nav {
+      position: absolute;
+      inset: 65px 0 auto;
+    }
+    .links {
+      flex-direction: column;
+      gap: 0;
+      padding: 8px var(--gutter) 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      transform-origin: top;
+      transition:
+        opacity 0.25s var(--ease-out),
+        transform 0.3s var(--ease-out),
+        visibility 0.3s;
+    }
+    .links a {
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 0;
+      font-size: 1.15rem;
+      font-family: var(--font-display);
+      color: var(--ink);
+    }
+    .links a[aria-current='true'] {
+      background: none;
+    }
+    .nav:not(.open) .links {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+    }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]')!;
+  const menu = nav.querySelector<HTMLButtonElement>('[data-menu]')!;
+  const links = [...nav.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')];
+
+  /* Mobile menu */
+  const setOpen = (open: boolean) => {
+    nav.classList.toggle('open', open);
+    menu.setAttribute('aria-expanded', String(open));
+  };
+  menu.addEventListener('click', () => setOpen(!nav.classList.contains('open')));
+  links.forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
+
+  /* Scroll progress scrubber */
+  let ticking = false;
+  const update = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    nav.style.setProperty('--progress', String(max > 0 ? scrollY / max : 0));
+    ticking = false;
+  };
+  addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) requestAnimationFrame(update);
+      ticking = true;
+    },
+    { passive: true },
+  );
+  update();
+
+  /* Highlight the section currently on screen */
+  const byId = new Map(links.map((a) => [a.hash.slice(1), a]));
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        links.forEach((a) => a.removeAttribute('aria-current'));
+        byId.get(e.target.id)?.setAttribute('aria-current', 'true');
+      }
+    },
+    { rootMargin: '-45% 0px -50% 0px' },
+  );
+  byId.forEach((_, id) => {
+    const el = document.getElementById(id);
+    if (el) io.observe(el);
+  });
+  const top = document.getElementById('top');
+  if (top) {
+    new IntersectionObserver(
+      ([e]) => e.isIntersecting && links.forEach((a) => a.removeAttribute('aria-current')),
+      { rootMargin: '-45% 0px -50% 0px' },
+    ).observe(top);
+  }
+</script>

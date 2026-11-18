@@ -1,52 +1,41 @@
 ---
 import Base from '../layouts/Base.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
 
-const name = 'Kalash Jain';
-const letters = [...name];
+// Placeholder sections so the jump links work; each gets built in its own step
+const upcoming = [
+  { id: 'work', n: '01', title: 'Work' },
+  { id: 'experience', n: '02', title: 'Experience' },
+  { id: 'about', n: '03', title: 'About' },
+  { id: 'contact', n: '04', title: 'Contact' },
+];
 ---
 
 <Base>
   <div class="glow" aria-hidden="true"></div>
+  <Nav />
 
-  <header class="top">
-    <span class="mono">Track 01 / Intro</span>
-    <ThemeToggle />
-  </header>
+  <main>
+    <Hero />
 
-  <main class="hero" data-hero>
-    <p class="mono eyebrow reveal">Engineer <span class="arrow">→</span> Product</p>
-
-    <div class="name-block">
-      <h1 class="name" aria-label={name}>
-        {
-          letters.map((ch, i) => (
-            <span class="letter-mask" aria-hidden="true">
-              <span class="letter" style={`--i:${i}`}>
-                {ch === ' ' ? ' ' : ch}
-              </span>
-            </span>
-          ))
-        }
-      </h1>
-      <svg class="wave" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
-        <path data-wave d="M0 60 L1000 60"></path>
-      </svg>
-    </div>
-
-    <p class="lede reveal">
-      First-year MBA at UCLA Anderson. Previously a software engineer at JP Morgan.
-      Now moving into product, with a soft spot for music, media and creative tools.
-    </p>
-
-    <p class="status mono reveal">
-      <span class="dot" aria-hidden="true"></span> Full site in production
-    </p>
+    {
+      upcoming.map((s) => (
+        <section id={s.id} class="stub" aria-labelledby={`${s.id}-h`}>
+          <p class="mono">
+            Track {s.n} / {s.title}
+          </p>
+          <h2 id={`${s.id}-h`}>{s.title}</h2>
+          <p class="soon">Coming in the next step.</p>
+        </section>
+      ))
+    }
   </main>
 
-  <footer class="bottom">
-    <span class="mono">Los Angeles · <time data-clock>--:--</time></span>
+  <footer class="footer">
     <span class="mono">© {new Date().getFullYear()} Kalash Jain</span>
+    <span class="mono">Los Angeles · <time data-clock>--:--</time></span>
+    <a class="mono top-link" href="#top">Back to top ↑</a>
   </footer>
 </Base>
 
@@ -55,8 +44,8 @@ const letters = [...name];
     position: fixed;
     width: min(90vw, 900px);
     aspect-ratio: 1;
-    left: 50%;
-    top: 45%;
+    left: 62%;
+    top: 40%;
     translate: -50% -50%;
     background: radial-gradient(closest-side, var(--glow), transparent 70%);
     filter: blur(20px);
@@ -66,150 +55,44 @@ const letters = [...name];
   }
   @keyframes drift {
     to {
-      translate: -40% -56%;
+      translate: -70% -45%;
       scale: 1.15;
     }
   }
 
-  .top,
-  .bottom {
-    position: fixed;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 20px var(--gutter);
-  }
-  .top {
-    top: 0;
-  }
-  .bottom {
-    bottom: 0;
-  }
-
-  .hero {
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 96px var(--gutter);
-    max-width: 1200px;
+  .stub {
+    max-width: 1320px;
     margin: 0 auto;
+    padding: 96px var(--gutter);
+    min-height: 60vh;
+    border-top: 1px solid var(--line);
   }
-
-  .eyebrow .arrow {
-    color: var(--accent);
-  }
-
-  .name-block {
-    display: inline-flex;
-    flex-direction: column;
-    align-self: flex-start;
-    max-width: 100%;
-    margin: 18px 0 28px;
-  }
-
-  .name {
-    margin: 0;
+  .stub h2 {
+    margin: 12px 0;
     font-family: var(--font-display);
-    font-weight: 700;
-    font-variation-settings: 'opsz' 96;
-    font-size: clamp(3.25rem, 13vw, 10.5rem);
-    line-height: 0.9;
-    letter-spacing: -0.045em;
-    white-space: nowrap;
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
   }
-  .letter-mask {
-    display: inline-block;
-    overflow: clip;
-    overflow-clip-margin: 0.12em;
-    padding-bottom: 0.06em;
-  }
-  .letter {
-    display: inline-block;
-  }
-
-  .wave {
-    display: block;
-    width: 100%;
-    height: clamp(40px, 7vw, 84px);
-    margin-top: 6px;
-    overflow: visible;
-    cursor: crosshair;
-  }
-  .wave path {
-    fill: none;
-    stroke: var(--accent);
-    stroke-width: 2.25;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .lede {
-    max-width: 52ch;
-    margin: 0 0 28px;
-    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  .soon {
     color: var(--muted);
   }
 
-  .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px 24px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 28px var(--gutter) 36px;
+    border-top: 1px solid var(--line);
   }
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 0 var(--accent);
-    animation: ping 2.4s var(--ease-out) infinite;
+  .top-link {
+    text-decoration: none;
   }
-  @keyframes ping {
-    70%,
-    100% {
-      box-shadow: 0 0 0 10px transparent;
-    }
-  }
-
-  /* Intro states: only hide things if JS is running to reveal them */
-  :global(.js) .letter {
-    transform: translateY(110%);
-    transition: transform 0.9s var(--ease-out);
-    transition-delay: calc(var(--i) * 40ms);
-  }
-  :global(.js) .reveal {
-    opacity: 0;
-    transform: translateY(12px);
-    transition:
-      opacity 0.8s var(--ease-out),
-      transform 0.8s var(--ease-out);
-  }
-  :global(.js) .lede.reveal {
-    transition-delay: 0.15s;
-  }
-  :global(.js) .status.reveal {
-    transition-delay: 0.3s;
-  }
-  :global(.js.intro-done) .letter,
-  :global(.js.intro-done) .reveal {
-    opacity: 1;
-    transform: none;
-  }
-
-  @media (max-width: 520px) {
-    .top .mono {
-      font-size: 0.68rem;
-    }
-    .bottom {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-    }
+  .top-link:hover {
+    color: var(--accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -220,131 +103,6 @@ const letters = [...name];
 </style>
 
 <script>
-  /* ---------------------------------------------------------------
-     Waveform intro
-     1. A flat line draws across, swells into an audio-like wave.
-     2. The name rises out of its mask as the wave peaks.
-     3. The wave settles to a quiet idle and leans toward the cursor.
-     Click or any key skips the intro. Reduced motion: static, instant.
-  ---------------------------------------------------------------- */
-  const root = document.documentElement;
-  const path = document.querySelector<SVGPathElement>('[data-wave]');
-  const svg = path?.ownerSVGElement;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const W = 1000;
-  const H = 120;
-  const MID = H / 2;
-  const N = 180;
-
-  const INTRO_MS = 1900;
-  const REVEAL_AT = 900;
-  const IDLE_AMP = 0.14;
-
-  let start = performance.now();
-  let revealed = false;
-  let pointerX = -1; // 0..1 across the wave, -1 when away
-  let pointerAmp = 0; // smoothed extra loudness near the cursor
-  let pulse = 0; // tap/click burst
-  let raf = 0;
-
-  const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-
-  function reveal() {
-    if (revealed) return;
-    revealed = true;
-    root.classList.add('intro-done');
-  }
-
-  function skip() {
-    if (revealed && performance.now() - start > INTRO_MS) return;
-    start = performance.now() - INTRO_MS;
-    reveal();
-  }
-
-  function shape(t: number, amp: number, drawn: number) {
-    let d = '';
-    const last = Math.max(1, Math.round(N * drawn));
-    for (let i = 0; i <= last; i++) {
-      const x = i / N;
-      const env = Math.pow(Math.sin(Math.PI * x), 1.4); // taper the ends
-      const s =
-        Math.sin(x * 38 + t * 0.0062) * 0.5 +
-        Math.sin(x * 91 - t * 0.0094) * 0.3 +
-        Math.sin(x * 17 + t * 0.0031) * 0.2;
-      let a = amp;
-      if (pointerX >= 0) {
-        const g = Math.exp(-Math.pow((x - pointerX) / 0.09, 2));
-        a += pointerAmp * g;
-      }
-      a += pulse * env;
-      const y = MID - s * env * a * (MID - 6);
-      d += `${i === 0 ? 'M' : 'L'}${(x * W).toFixed(1)} ${y.toFixed(1)}`;
-    }
-    return d;
-  }
-
-  function frame(now: number) {
-    const e = now - start;
-    let amp: number;
-    let drawn: number;
-
-    if (e < INTRO_MS) {
-      drawn = easeOut(clamp(e / 500));
-      const swell = clamp((e - 250) / 550);
-      const settle = clamp((e - 1100) / 800);
-      amp = easeOut(swell) * (1 - settle) + IDLE_AMP * settle;
-      amp = Math.max(amp, settle ? IDLE_AMP : 0);
-      if (e >= REVEAL_AT) reveal();
-    } else {
-      drawn = 1;
-      amp = IDLE_AMP;
-      reveal();
-    }
-
-    const target = pointerX >= 0 ? 0.85 : 0;
-    pointerAmp += (target - pointerAmp) * 0.08;
-    pulse *= 0.94;
-
-    path!.setAttribute('d', shape(now, amp, drawn));
-    raf = requestAnimationFrame(frame);
-  }
-
-  // Safety net: content must never wait on animation frames
-  // (background tabs, slow devices). Reveal on a plain timer too.
-  setTimeout(reveal, INTRO_MS);
-
-  if (path && svg) {
-    if (reduce) {
-      path.setAttribute('d', shape(0, IDLE_AMP, 1));
-      reveal();
-    } else {
-      raf = requestAnimationFrame(frame);
-
-      addEventListener('keydown', skip, { once: true });
-      addEventListener('pointerdown', skip, { once: true });
-
-      const hero = document.querySelector<HTMLElement>('[data-hero]')!;
-      hero.addEventListener('pointermove', (ev) => {
-        const r = svg.getBoundingClientRect();
-        const x = (ev.clientX - r.left) / r.width;
-        pointerX = x >= -0.05 && x <= 1.05 ? clamp(x) : -1;
-      });
-      hero.addEventListener('pointerleave', () => (pointerX = -1));
-      svg.addEventListener('click', () => (pulse = 0.8));
-
-      // Don't burn battery when the tab is hidden
-      document.addEventListener('visibilitychange', () => {
-        cancelAnimationFrame(raf);
-        if (!document.hidden) raf = requestAnimationFrame(frame);
-      });
-    }
-  } else {
-    reveal();
-  }
-
-  /* Live LA clock: a small human detail */
   const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
   const fmt = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Los_Angeles',
