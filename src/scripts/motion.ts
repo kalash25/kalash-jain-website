@@ -15,6 +15,16 @@ import 'lenis/dist/lenis.css';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Wait for the hero intro (or 3s at most) plus a beat, so setup work never stutters it
+const afterIntro = new Promise<void>((resolve) => {
+  const go = () => setTimeout(resolve, 1100);
+  if (document.documentElement.classList.contains('intro-done')) go();
+  else {
+    addEventListener('intro:done', go, { once: true });
+    setTimeout(resolve, 3000);
+  }
+});
+
 if (!reduce) {
   gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -27,60 +37,62 @@ if (!reduce) {
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
 
-  /* Fade-up blocks */
-  document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
-    const stagger = el.dataset.reveal === 'stagger';
-    gsap.from(stagger ? el.children : el, {
-      y: 28,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'power3.out',
-      stagger: stagger ? 0.08 : 0,
-      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-    });
-  });
-
-  /* Experience timeline: the line draws itself as you scroll past it */
-  document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((tl) => {
-    const fill = tl.querySelector('[data-timeline-fill]');
-    if (!fill) return;
-    gsap.fromTo(
-      fill,
-      { scaleY: 0 },
-      {
-        scaleY: 1,
-        ease: 'none',
-        scrollTrigger: { trigger: tl, start: 'top 70%', end: 'bottom 60%', scrub: 0.6 },
-      },
-    );
-    tl.querySelectorAll('[data-timeline-dot]').forEach((dot) => {
-      ScrollTrigger.create({
-        trigger: dot,
-        start: 'top 65%',
-        onEnter: () => dot.classList.add('lit'),
-        onLeaveBack: () => dot.classList.remove('lit'),
+  afterIntro.then(() => {
+    /* Fade-up blocks */
+    document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+      const stagger = el.dataset.reveal === 'stagger';
+      gsap.from(stagger ? el.children : el, {
+        y: 28,
+        opacity: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+        stagger: stagger ? 0.08 : 0,
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
       });
     });
-  });
 
-  /* Headings: split into lines once fonts are ready so line breaks are real */
-  document.fonts.ready.then(() => {
-    document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
-      SplitText.create(el, {
-        type: 'lines',
-        mask: 'lines',
-        autoSplit: true,
-        onSplit: (self) =>
-          gsap.from(self.lines, {
-            yPercent: 110,
-            duration: 1,
-            ease: 'power4.out',
-            stagger: 0.09,
-            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-          }),
+    /* Experience timeline: the line draws itself as you scroll past it */
+    document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((tl) => {
+      const fill = tl.querySelector('[data-timeline-fill]');
+      if (!fill) return;
+      gsap.fromTo(
+        fill,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: { trigger: tl, start: 'top 70%', end: 'bottom 60%', scrub: 0.6 },
+        },
+      );
+      tl.querySelectorAll('[data-timeline-dot]').forEach((dot) => {
+        ScrollTrigger.create({
+          trigger: dot,
+          start: 'top 65%',
+          onEnter: () => dot.classList.add('lit'),
+          onLeaveBack: () => dot.classList.remove('lit'),
+        });
       });
     });
-    ScrollTrigger.refresh();
+
+    /* Headings: split into lines once fonts are ready so line breaks are real */
+    document.fonts.ready.then(() => {
+      document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
+        SplitText.create(el, {
+          type: 'lines',
+          mask: 'lines',
+          autoSplit: true,
+          onSplit: (self) =>
+            gsap.from(self.lines, {
+              yPercent: 110,
+              duration: 1,
+              ease: 'power4.out',
+              stagger: 0.09,
+              scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+            }),
+        });
+      });
+      ScrollTrigger.refresh();
+    });
   });
 }
 
