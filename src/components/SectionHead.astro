@@ -4,13 +4,14 @@ interface Props {
   label: string;
   title: string;
   id: string;
+  wide?: boolean;
 }
-const { n, label, title, id } = Astro.props;
+const { n, label, title, id, wide } = Astro.props;
 ---
 
 <div class="head">
   <p class="mono"><span class="n">{n}</span> / {label}</p>
-  <h2 id={id} data-split set:html={title} />
+  <h2 id={id} class:list={{ wide }} data-split set:html={title} />
 </div>
 
 <style>
@@ -29,6 +30,10 @@ const { n, label, title, id } = Astro.props;
     font-size: clamp(2.4rem, 6vw, 4.75rem);
     line-height: 0.98;
     letter-spacing: -0.04em;
+  }
+  h2.wide {
+    max-width: 24ch;
+    font-size: clamp(2.2rem, 5vw, 4rem);
   }
   h2 :global(em) {
     font-style: normal;

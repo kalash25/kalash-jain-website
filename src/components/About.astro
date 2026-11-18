@@ -12,8 +12,9 @@ const ticker = [...offClock, ...offClock, ...offClock];
   <SectionHead
     n="04"
     label="About"
+    wide
     id="about-h"
-    title="Building <em>the right things,</em> not just building things right."
+    title="Not just building things right, but building <em>the right things.</em>"
   />
 
   <div class="grid">
@@ -21,7 +22,7 @@ const ticker = [...offClock, ...offClock, ...offClock];
       <Picture
         src={photo}
         formats={['avif', 'webp']}
-        widths={[400, 640, 900]}
+        widths={[480, 800, 1200]}
         sizes="(max-width: 760px) 92vw, 440px"
         alt="Kalash Jain at UCLA Anderson"
         loading="lazy"
@@ -87,7 +88,7 @@ const ticker = [...offClock, ...offClock, ...offClock];
     align-items: start;
   }
 
-  /* Monochrome photo with a violet wash, so the red brick sits in the palette */
+  /* Full-colour photo; a soft violet edge ties the warm brick into the palette */
   .photo {
     position: relative;
     margin: 0;
@@ -102,27 +103,21 @@ const ticker = [...offClock, ...offClock, ...offClock];
     height: 100%;
     object-fit: cover;
     object-position: 52% 30%;
-    filter: grayscale(1) contrast(1.05);
-    transition:
-      filter 0.8s var(--ease-out),
-      transform 1.2s var(--ease-out);
+    transition: transform 1.2s var(--ease-out);
   }
   .photo::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--accent);
-    mix-blend-mode: color;
-    opacity: 0.55;
-    transition: opacity 0.8s var(--ease-out);
+    background: linear-gradient(
+      to top,
+      color-mix(in oklch, var(--accent) 30%, transparent),
+      transparent 40%
+    );
     pointer-events: none;
   }
   .photo:hover :global(img) {
-    filter: grayscale(0) contrast(1);
     transform: scale(1.03);
-  }
-  .photo:hover::after {
-    opacity: 0;
   }
 
   .text p {

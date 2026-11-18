@@ -141,13 +141,15 @@ const { id, n, label, title, entries } = Astro.props;
   }
 
   .meta {
-    padding-right: 36px;
+    position: relative;
+    z-index: 1;
+    padding-right: 48px;
   }
   /* Logos drawn in one colour from the palette; they brighten on hover */
   .logo {
     display: block;
     height: 30px;
-    max-width: 180px;
+    max-width: 150px;
     background: var(--muted);
     -webkit-mask: var(--logo) left center / contain no-repeat;
     mask: var(--logo) left center / contain no-repeat;
@@ -156,9 +158,9 @@ const { id, n, label, title, entries } = Astro.props;
       background-color 0.3s var(--ease-out),
       transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .entry:hover .logo {
+  .meta:hover .logo {
     background: var(--ink);
-    transform: scale(1.18);
+    transform: scale(1.15);
   }
   .when {
     margin: 16px 0 4px;
