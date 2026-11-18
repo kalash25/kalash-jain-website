@@ -1,0 +1,172 @@
+---
+import SectionHead from './SectionHead.astro';
+import { links } from '../data/site';
+
+// The one place on the site with all the links (the footer doesn't repeat them)
+const channels = [
+  { label: 'LinkedIn', note: 'linkedin.com/in/kalash-jain', href: links.linkedin },
+  { label: 'GitHub', note: 'github.com/kalash25', href: links.github },
+  { label: 'Resume', note: 'One page, PDF', href: links.resume, download: true },
+];
+---
+
+<section id="contact" class="section" aria-labelledby="contact-h">
+  <SectionHead n="04" label="Contact" id="contact-h" title="Let's <em>talk.</em>" />
+
+  <p class="intro" data-reveal>
+    Recruiting for Summer 2027 PM internships, and always up for a conversation about products,
+    music, or the pivot.
+  </p>
+
+  <div class="email" data-reveal>
+    <a class="address" href={`mailto:${links.email}`}>{links.email}</a>
+    <button class="btn copy" type="button" data-copy={links.email}>
+      <span data-copy-label>Copy email</span>
+    </button>
+  </div>
+
+  <ul class="channels" data-reveal="stagger">
+    {
+      channels.map((c) => (
+        <li>
+          <a
+            href={c.href}
+            {...(c.download ? { download: true } : { target: '_blank', rel: 'noopener' })}
+          >
+            <span class="label">{c.label}</span>
+            <span class="note mono">{c.note}</span>
+            <span class="arrow" aria-hidden="true">
+              {c.download ? '↓' : '↗'}
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="toast mono" role="status" aria-live="polite" data-toast></p>
+</section>
+
+<style>
+  .section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: clamp(80px, 10vw, 140px) var(--gutter);
+    border-top: 1px solid var(--line);
+  }
+  .intro {
+    max-width: 52ch;
+    margin: -24px 0 36px;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+
+  .email {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+    margin-bottom: clamp(40px, 5vw, 64px);
+  }
+  .address {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 3.4rem);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    text-decoration: none;
+    background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat;
+    transition: background-size 0.5s var(--ease-out);
+    overflow-wrap: anywhere;
+  }
+  .address:hover {
+    background-size: 100% 2px;
+  }
+
+  .channels {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .channels a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 4px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    transition:
+      padding 0.4s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+  .channels a:hover {
+    padding-left: 16px;
+    color: var(--accent);
+  }
+  .label {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    letter-spacing: -0.03em;
+  }
+  .arrow {
+    font-size: 1.3rem;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .channels a:hover .arrow {
+    transform: translate(3px, -3px);
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 60;
+    margin: 0;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--bg);
+    translate: -50% 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.3s var(--ease-out),
+      translate 0.4s var(--ease-out);
+  }
+  .toast:global(.show) {
+    opacity: 1;
+    translate: -50% 0;
+  }
+
+  @media (max-width: 560px) {
+    .note {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-copy]');
+  const label = btn?.querySelector('[data-copy-label]');
+  const toast = document.querySelector<HTMLElement>('[data-toast]');
+  let timer = 0;
+
+  btn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(btn.dataset.copy!);
+      if (toast) toast.textContent = 'Email copied. Talk soon ✦';
+      if (label) label.textContent = 'Copied';
+    } catch {
+      if (toast) toast.textContent = 'Could not copy. The address is right there ↑';
+    }
+    toast?.classList.add('show');
+    clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      toast?.classList.remove('show');
+      if (label) label.textContent = 'Copy email';
+    }, 2200);
+  });
+</script>

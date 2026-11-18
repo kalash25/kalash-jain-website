@@ -1,0 +1,267 @@
+---
+import SectionHead from './SectionHead.astro';
+import { experience } from '../data/site';
+---
+
+<section id="experience" class="section" aria-labelledby="experience-h">
+  <SectionHead
+    n="01"
+    label="Experience"
+    id="experience-h"
+    title="From trading-floor systems to <em>product.</em>"
+  />
+
+  <ol class="timeline" data-timeline>
+    <span class="rail" aria-hidden="true"><span class="rail-fill" data-timeline-fill></span></span>
+    {
+      experience.map((e) => (
+        <li class="entry">
+          <span class:list={['dot', { now: e.now }]} data-timeline-dot aria-hidden="true" />
+          <div class="meta">
+            <span class="mark" aria-hidden="true">
+              {e.mark}
+            </span>
+            <p class="when mono">
+              {e.now && <span class="live">Now playing</span>}
+              {e.when}
+            </p>
+            <p class="place mono">{e.place}</p>
+          </div>
+
+          <div class="body" data-reveal>
+            <h3>{e.org}</h3>
+            {e.roles && (
+              <ol class="roles" aria-label="Roles">
+                {e.roles.map((r) => (
+                  <li>
+                    <span class="role">{r.title}</span>
+                    <span class="mono">{r.dates}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            <p class="summary">{e.summary}</p>
+            <ul class="points">
+              {e.points.map((p) => (
+                <li>{p}</li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  .section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: clamp(80px, 10vw, 140px) var(--gutter);
+    border-top: 1px solid var(--line);
+  }
+
+  .timeline {
+    --rail-x: 196px;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rail {
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: var(--rail-x);
+    width: 1px;
+    background: var(--line);
+  }
+  .rail-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(var(--accent), color-mix(in oklch, var(--accent) 40%, transparent));
+    transform-origin: top;
+  }
+
+  .entry {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--rail-x) minmax(0, 1fr);
+    padding-bottom: clamp(48px, 6vw, 80px);
+  }
+  .entry:last-child {
+    padding-bottom: 0;
+  }
+
+  .dot {
+    position: absolute;
+    top: 6px;
+    left: calc(var(--rail-x) - 6px);
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    transition:
+      background-color 0.4s var(--ease-out),
+      border-color 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out);
+  }
+  .dot:global(.lit),
+  .dot.now {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 0 5px color-mix(in oklch, var(--accent) 22%, transparent);
+  }
+
+  .meta {
+    padding-right: 32px;
+  }
+  .mark {
+    display: inline-grid;
+    place-items: center;
+    min-width: 56px;
+    height: 56px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+    transition:
+      color 0.3s var(--ease-out),
+      border-color 0.3s var(--ease-out);
+  }
+  .entry:hover .mark {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+  .when {
+    margin: 14px 0 4px;
+    color: var(--ink);
+  }
+  .live {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+  .place {
+    margin: 0;
+    font-size: 0.68rem;
+  }
+
+  .body {
+    padding-left: 40px;
+  }
+  h3 {
+    margin: 0 0 12px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  /* Role progression shown as a little level-up track */
+  .roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+  .roles li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+  .roles li:last-child {
+    border-color: var(--accent);
+    background: color-mix(in oklch, var(--accent) 12%, transparent);
+  }
+  .roles li + li::before {
+    content: '→';
+    margin-right: 2px;
+    color: var(--accent);
+  }
+  .roles .mono {
+    font-size: 0.66rem;
+  }
+
+  .summary {
+    max-width: 62ch;
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+  }
+  .points {
+    max-width: 66ch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+  }
+  .points li {
+    position: relative;
+    padding: 6px 0 6px 22px;
+  }
+  .points li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.95em;
+    width: 10px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  @media (max-width: 760px) {
+    .timeline {
+      --rail-x: 6px;
+    }
+    .entry {
+      grid-template-columns: 1fr;
+      padding-left: 34px;
+    }
+    .dot {
+      left: 0;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 14px;
+      padding: 0 0 16px;
+    }
+    .mark {
+      min-width: 44px;
+      height: 44px;
+      font-size: 0.8rem;
+      border-radius: 11px;
+    }
+    .when {
+      margin: 0;
+    }
+    .live {
+      display: inline;
+      margin-right: 8px;
+    }
+    .place {
+      flex-basis: 100%;
+    }
+    .body {
+      padding-left: 0;
+    }
+    .roles {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

@@ -1,0 +1,37 @@
+---
+interface Props {
+  n: string;
+  label: string;
+  title: string;
+  id: string;
+}
+const { n, label, title, id } = Astro.props;
+---
+
+<div class="head">
+  <p class="mono"><span class="n">Track {n}</span> / {label}</p>
+  <h2 id={id} data-split set:html={title} />
+</div>
+
+<style>
+  .head {
+    margin-bottom: clamp(36px, 5vw, 64px);
+  }
+  .n {
+    color: var(--accent);
+  }
+  h2 {
+    margin: 14px 0 0;
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-variation-settings: 'opsz' 96;
+    font-size: clamp(2.4rem, 6vw, 4.75rem);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+  h2 :global(em) {
+    font-style: normal;
+    color: var(--accent);
+  }
+</style>

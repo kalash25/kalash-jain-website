@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import portrait from '../assets/portrait-dark.webp';
+import { links } from '../data/site';
 
 const name = 'Kalash Jain';
 const letters = [...name];
@@ -30,24 +31,25 @@ const letters = [...name];
     </div>
 
     <p class="line reveal" style="--d:1">
-      Built things right.<br />
-      Now building <em>the right things.</em>
+      Engineering depth. Product instinct.<br />
+      <em>A musician's ear.</em>
     </p>
 
     <p class="lede reveal" style="--d:2">
-      Three years as a software engineer at JPMorgan Chase, where I pushed to replace five
-      booking tools with one and cut new-team onboarding from a month to two days. Now at UCLA
-      Anderson, moving into product. Off the clock: published poet, lead singer, guitarist.
+      Three years as a software engineer at JPMorgan Chase, building the testing, automation and
+      data platforms behind global trading desks, and getting ops, risk and regulatory teams to
+      adopt them. Now an MBA at UCLA Anderson, moving into product for tech, media and music.
+      Off the clock: published poet, lead singer, guitarist.
     </p>
 
     <div class="ctas reveal" style="--d:3">
-      <a class="btn btn-primary" href="#work">See my work <span aria-hidden="true">↓</span></a>
-      <a class="btn" href="/resume/Kalash-Jain-Resume.pdf" download>Download resume</a>
+      <a class="btn btn-primary" href="#experience">See my journey <span aria-hidden="true">↓</span></a>
+      <a class="btn" href={links.resume} download>Download resume</a>
     </div>
 
     <p class="status mono reveal" style="--d:4">
       <span class="dot" aria-hidden="true"></span>
-      Recruiting for Summer '27 PM internships · tech, media & music
+      Recruiting for Summer '27 PM internships
     </p>
   </div>
 

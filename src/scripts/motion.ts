@@ -1,0 +1,124 @@
+/* ------------------------------------------------------------------
+   Site-wide motion
+   - Lenis smooth scrolling (also handles nav anchor jumps)
+   - [data-split]   headings reveal line by line from a mask
+   - [data-reveal]  blocks fade up as they enter (children stagger
+                    when the element has data-reveal="stagger")
+   - [data-count]   numbers count up once
+   - [data-timeline] its [data-timeline-fill] line draws with scroll
+   Nothing is hidden before JS runs, and reduced motion skips all of it.
+------------------------------------------------------------------- */
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function formatCount(n: number) {
+  return Math.round(n).toLocaleString('en-US');
+}
+
+function initCounts() {
+  document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
+    const target = Number(el.dataset.count);
+    if (reduce) {
+      el.textContent = formatCount(target);
+      return;
+    }
+    const state = { v: 0 };
+    el.textContent = '0';
+    gsap.to(state, {
+      v: target,
+      duration: 1.8,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+      onUpdate: () => (el.textContent = formatCount(state.v)),
+    });
+  });
+}
+
+if (reduce) {
+  initCounts();
+} else {
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  /* Smooth scroll, driven by GSAP's ticker so ScrollTrigger stays in sync */
+  const lenis = new Lenis({
+    lerp: 0.1,
+    anchors: { offset: -72 },
+  });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((t) => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+
+  initCounts();
+
+  /* Fade-up blocks */
+  document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+    const stagger = el.dataset.reveal === 'stagger';
+    gsap.from(stagger ? el.children : el, {
+      y: 28,
+      opacity: 0,
+      duration: 0.9,
+      ease: 'power3.out',
+      stagger: stagger ? 0.08 : 0,
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+    });
+  });
+
+  /* Experience timeline: the line draws itself as you scroll past it */
+  document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((tl) => {
+    const fill = tl.querySelector('[data-timeline-fill]');
+    if (!fill) return;
+    gsap.fromTo(
+      fill,
+      { scaleY: 0 },
+      {
+        scaleY: 1,
+        ease: 'none',
+        scrollTrigger: { trigger: tl, start: 'top 70%', end: 'bottom 60%', scrub: 0.6 },
+      },
+    );
+    tl.querySelectorAll('[data-timeline-dot]').forEach((dot) => {
+      ScrollTrigger.create({
+        trigger: dot,
+        start: 'top 65%',
+        onEnter: () => dot.classList.add('lit'),
+        onLeaveBack: () => dot.classList.remove('lit'),
+      });
+    });
+  });
+
+  /* Headings: split into lines once fonts are ready so line breaks are real */
+  document.fonts.ready.then(() => {
+    document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
+      SplitText.create(el, {
+        type: 'lines',
+        mask: 'lines',
+        autoSplit: true,
+        onSplit: (self) =>
+          gsap.from(self.lines, {
+            yPercent: 110,
+            duration: 1,
+            ease: 'power4.out',
+            stagger: 0.09,
+            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          }),
+      });
+    });
+    ScrollTrigger.refresh();
+  });
+}
+
+/* Cursor spotlight on cards (pure CSS variables, mouse only) */
+if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  document.querySelectorAll<HTMLElement>('[data-spotlight]').forEach((card) => {
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      card.style.setProperty('--my', `${e.clientY - r.top}px`);
+    });
+  });
+}

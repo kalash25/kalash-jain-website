@@ -2,14 +2,11 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Hero from '../components/Hero.astro';
-
-// Placeholder sections so the jump links work; each gets built in its own step
-const upcoming = [
-  { id: 'work', n: '01', title: 'Work' },
-  { id: 'experience', n: '02', title: 'Experience' },
-  { id: 'about', n: '03', title: 'About' },
-  { id: 'contact', n: '04', title: 'Contact' },
-];
+import Hits from '../components/Hits.astro';
+import Experience from '../components/Experience.astro';
+import Projects from '../components/Projects.astro';
+import About from '../components/About.astro';
+import Contact from '../components/Contact.astro';
 ---
 
 <Base>
@@ -18,23 +15,17 @@ const upcoming = [
 
   <main>
     <Hero />
-
-    {
-      upcoming.map((s) => (
-        <section id={s.id} class="stub" aria-labelledby={`${s.id}-h`}>
-          <p class="mono">
-            Track {s.n} / {s.title}
-          </p>
-          <h2 id={`${s.id}-h`}>{s.title}</h2>
-          <p class="soon">Coming in the next step.</p>
-        </section>
-      ))
-    }
+    <Hits />
+    <Experience />
+    <Projects />
+    <About />
+    <Contact />
   </main>
 
   <footer class="footer">
-    <span class="mono">© {new Date().getFullYear()} Kalash Jain</span>
-    <span class="mono">Los Angeles · <time data-clock>--:--</time></span>
+    <span class="sign">Kalash Jain</span>
+    <span class="mono">Designed & built in Los Angeles · <time data-clock>--:--</time></span>
+    <span class="mono">© {new Date().getFullYear()}</span>
     <a class="mono top-link" href="#top">Back to top ↑</a>
   </footer>
 </Base>
@@ -60,33 +51,21 @@ const upcoming = [
     }
   }
 
-  .stub {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 96px var(--gutter);
-    min-height: 60vh;
-    border-top: 1px solid var(--line);
-  }
-  .stub h2 {
-    margin: 12px 0;
-    font-family: var(--font-display);
-    font-size: clamp(2.25rem, 6vw, 4.5rem);
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-  .soon {
-    color: var(--muted);
-  }
-
   .footer {
     display: flex;
     flex-wrap: wrap;
+    align-items: baseline;
     justify-content: space-between;
     gap: 12px 24px;
     max-width: 1320px;
     margin: 0 auto;
     padding: 28px var(--gutter) 36px;
     border-top: 1px solid var(--line);
+  }
+  .sign {
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing: -0.03em;
   }
   .top-link {
     text-decoration: none;
@@ -103,6 +82,8 @@ const upcoming = [
 </style>
 
 <script>
+  import '../scripts/motion';
+
   const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
   const fmt = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Los_Angeles',

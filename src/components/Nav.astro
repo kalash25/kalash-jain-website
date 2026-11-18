@@ -2,9 +2,11 @@
 import ThemeToggle from './ThemeToggle.astro';
 
 // Sections are numbered like tracks on an album
+import { links as site } from '../data/site';
+
 const links = [
-  { n: '01', label: 'Work', href: '#work' },
-  { n: '02', label: 'Experience', href: '#experience' },
+  { n: '01', label: 'Experience', href: '#experience' },
+  { n: '02', label: 'Projects', href: '#projects' },
   { n: '03', label: 'About', href: '#about' },
   { n: '04', label: 'Contact', href: '#contact' },
 ];
@@ -35,7 +37,7 @@ const links = [
     </nav>
 
     <div class="actions">
-      <a class="btn btn-small" href="/resume/Kalash-Jain-Resume.pdf" download>
+      <a class="btn btn-small" href={site.resume} download>
         Resume <span aria-hidden="true">↓</span>
       </a>
       <ThemeToggle />

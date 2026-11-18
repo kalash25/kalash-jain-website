@@ -1,0 +1,206 @@
+---
+import { Picture } from 'astro:assets';
+import SectionHead from './SectionHead.astro';
+import photo from '../assets/portrait-ucla.jpg';
+import { offClock } from '../data/site';
+---
+
+<section id="about" class="section" aria-labelledby="about-h">
+  <SectionHead
+    n="03"
+    label="About"
+    id="about-h"
+    title="Building <em>the right things,</em> not just building things right."
+  />
+
+  <div class="grid">
+    <figure class="photo" data-reveal>
+      <Picture
+        src={photo}
+        formats={['avif', 'webp']}
+        widths={[400, 640, 900]}
+        sizes="(max-width: 760px) 92vw, 440px"
+        alt="Kalash Jain at UCLA Anderson"
+        loading="lazy"
+      />
+    </figure>
+
+    <div class="text" data-reveal="stagger">
+      <p class="big">
+        I spent my first years out of college as a software engineer at JPMorgan Chase, learning to
+        build for scale, explain technical trade-offs to people who don't write code, and ship under
+        regulatory constraints.
+      </p>
+      <p>
+        Somewhere along the way I realised the part I loved most wasn't the code. It was figuring
+        out what was worth building, and getting a room full of teams to agree on it. That's what
+        brought me to UCLA Anderson and into product management.
+      </p>
+      <p>
+        I'm also a published poet and a lifelong musician, which is why I'm drawn to product roles
+        where technology meets media and entertainment: places where technical depth and cultural
+        taste both matter.
+      </p>
+      <p>
+        Always happy to talk with fellow builders, musicians, or anyone figuring out their own
+        pivot.
+      </p>
+    </div>
+  </div>
+
+  <!-- Off-the-clock ticker; pauses on hover, static for reduced motion -->
+  <div class="marquee" aria-label="Off the clock">
+    <div class="track">
+      {
+        [0, 1].map((copy) => (
+          <ul aria-hidden={copy === 1 ? 'true' : undefined}>
+            {offClock.map((item) => (
+              <li>
+                {item}
+                <span class="sep" aria-hidden="true">
+                  ✦
+                </span>
+              </li>
+            ))}
+          </ul>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: clamp(80px, 10vw, 140px) var(--gutter) clamp(60px, 7vw, 100px);
+    border-top: 1px solid var(--line);
+    overflow-x: clip;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(32px, 5vw, 80px);
+    align-items: start;
+  }
+
+  /* Monochrome photo with a violet wash, so the red brick sits in the palette */
+  .photo {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 20px;
+    aspect-ratio: 4 / 5;
+    background: var(--surface);
+  }
+  .photo :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 52% 30%;
+    filter: grayscale(1) contrast(1.05);
+    transition:
+      filter 0.8s var(--ease-out),
+      transform 1.2s var(--ease-out);
+  }
+  .photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    mix-blend-mode: color;
+    opacity: 0.55;
+    transition: opacity 0.8s var(--ease-out);
+    pointer-events: none;
+  }
+  .photo:hover :global(img) {
+    filter: grayscale(0) contrast(1);
+    transform: scale(1.03);
+  }
+  .photo:hover::after {
+    opacity: 0;
+  }
+
+  .text p {
+    max-width: 60ch;
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .text .big {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 450;
+    font-size: clamp(1.3rem, 2.1vw, 1.7rem);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  .marquee {
+    margin-top: clamp(56px, 7vw, 96px);
+    border-block: 1px solid var(--line);
+    padding: 18px 0;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .track {
+    display: flex;
+    width: max-content;
+    animation: scroll 38s linear infinite;
+  }
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+  .track ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .track li {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    letter-spacing: -0.02em;
+  }
+  .sep {
+    margin: 0 28px;
+    color: var(--accent);
+    font-size: 0.7em;
+  }
+  @keyframes scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .photo {
+      max-width: 420px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+    .track ul + ul {
+      display: none;
+    }
+    .track ul {
+      flex-wrap: wrap;
+      row-gap: 8px;
+    }
+    .marquee {
+      mask-image: none;
+    }
+  }
+</style>

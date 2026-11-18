@@ -1,0 +1,161 @@
+---
+import SectionHead from './SectionHead.astro';
+import { projects } from '../data/site';
+---
+
+<section id="projects" class="section" aria-labelledby="projects-h">
+  <SectionHead
+    n="02"
+    label="Projects"
+    id="projects-h"
+    title="Things I build <em>for myself.</em>"
+  />
+  <p class="intro" data-reveal>
+    Small AI agents I build with Claude Code to stay sharp technically and to make my own days run
+    better.
+  </p>
+
+  <div class="cards" data-reveal="stagger">
+    {
+      projects.map((p, i) => (
+        <article class="card" data-spotlight>
+          <header>
+            <span class="mono">
+              Side B · {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3>{p.name}</h3>
+            <p class="kind">{p.kind}</p>
+          </header>
+          <dl>
+            <div>
+              <dt class="mono">Problem</dt>
+              <dd>{p.problem}</dd>
+            </div>
+            <div>
+              <dt class="mono">What I built</dt>
+              <dd>{p.built}</dd>
+            </div>
+          </dl>
+          <ul class="stats" aria-label="Results">
+            {p.stats.map((s) => (
+              <li>{s}</li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: clamp(80px, 10vw, 140px) var(--gutter);
+    border-top: 1px solid var(--line);
+  }
+  .intro {
+    max-width: 56ch;
+    margin: -24px 0 40px;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .card {
+    --mx: 50%;
+    --my: 0%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: clamp(24px, 3vw, 36px);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      border-color 0.3s var(--ease-out),
+      transform 0.4s var(--ease-out);
+  }
+  /* Soft violet light that follows the cursor */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      420px circle at var(--mx) var(--my),
+      color-mix(in oklch, var(--accent) 16%, transparent),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .card:hover {
+    border-color: color-mix(in oklch, var(--accent) 50%, var(--line));
+    transform: translateY(-4px);
+  }
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  h3 {
+    margin: 10px 0 4px;
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .kind {
+    margin: 0;
+    color: var(--accent);
+  }
+
+  dl {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+  }
+  dt {
+    margin-bottom: 4px;
+    font-size: 0.66rem;
+  }
+  dd {
+    margin: 0;
+  }
+
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: auto 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .stats li {
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 760px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card:hover {
+      transform: none;
+    }
+  }
+</style>
