@@ -1,7 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import portrait from '../assets/portrait-dark.webp';
-import { links } from '../data/site';
+import { links, stickers } from '../data/site';
 
 const name = 'Kalash Jain';
 const letters = [...name];
@@ -31,19 +31,24 @@ const letters = [...name];
     </div>
 
     <p class="line reveal" style="--d:1">
-      Engineering depth. Product instinct.<br />
-      <em>A musician's ear.</em>
+      Engineer by training.<br />
+      <em>Product person in the making.</em>
     </p>
 
-    <p class="lede reveal" style="--d:2">
-      Three years as a software engineer at JPMorgan Chase, building the testing, automation and
-      data platforms behind global trading desks, and getting ops, risk and regulatory teams to
-      adopt them. Now an MBA at UCLA Anderson, moving into product for tech, media and music.
-      Off the clock: published poet, lead singer, guitarist.
-    </p>
+    <div class="lede reveal" style="--d:2">
+      <p>
+        I spent three years as a software engineer at JPMorgan Chase, building testing and
+        automation tools and working closely with the teams who used them. Now I'm at UCLA Anderson,
+        moving into product management in tech, media and creative tools.
+      </p>
+      <p>
+        Off the clock, I write poetry (some of it published), the occasional song, and small apps
+        for myself.
+      </p>
+    </div>
 
     <div class="ctas reveal" style="--d:3">
-      <a class="btn btn-primary" href="#experience">See my journey <span aria-hidden="true">↓</span></a>
+      <a class="btn btn-primary" href="#experience">See my experience <span aria-hidden="true">↓</span></a>
       <a class="btn" href={links.resume} download>Download resume</a>
     </div>
 
@@ -54,11 +59,8 @@ const letters = [...name];
   </div>
 
   <div class="media">
-    <div class="record-wrap" data-tilt>
-      <div class="vinyl" aria-hidden="true">
-        <div class="vinyl-label"><span>KJ</span></div>
-      </div>
-      <figure class="cover">
+    <div class="frame" data-frame>
+      <figure class="photo">
         <Picture
           src={portrait}
           formats={['avif', 'webp']}
@@ -68,9 +70,17 @@ const letters = [...name];
           loading="eager"
           fetchpriority="high"
         />
-        <figcaption class="mono">Side A · Kalash Jain</figcaption>
       </figure>
+
+      {
+        stickers.map((s, i) => (
+          <span class={`sticker s${i + 1}`} style={`--i:${i}`} data-sticker aria-hidden="true">
+            {s}
+          </span>
+        ))
+      }
     </div>
+    <p class="hint mono" aria-hidden="true">↑ the stickers move</p>
   </div>
 </section>
 
@@ -85,7 +95,7 @@ const letters = [...name];
     max-width: 1320px;
     margin: 0 auto;
     padding: 112px var(--gutter) 72px;
-    /* the record slides past the edge; never let it cause sideways scroll */
+    /* stickers can be dragged past the edge; never let that cause sideways scroll */
     overflow-x: clip;
   }
 
@@ -156,6 +166,9 @@ const letters = [...name];
     font-size: clamp(1rem, 1.25vw, 1.1rem);
     color: var(--muted);
   }
+  .lede p {
+    margin: 0 0 10px;
+  }
   .ctas {
     display: flex;
     flex-wrap: wrap;
@@ -187,122 +200,98 @@ const letters = [...name];
     }
   }
 
-  /* ---------- album cover + vinyl ---------- */
+  /* ---------- photo + stickers ---------- */
   .media {
     display: flex;
-    justify-content: center;
-    padding-right: 18%;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
   }
-  .record-wrap {
-    --rx: 0deg;
-    --ry: 0deg;
+  .frame {
     position: relative;
-    width: min(100%, 420px);
-    aspect-ratio: 1;
-    transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
-    transition: transform 0.5s var(--ease-out);
+    width: min(100%, 400px);
   }
-  .cover {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
+  .photo {
     margin: 0;
+    aspect-ratio: 4 / 5;
     overflow: hidden;
-    border-radius: 6px;
+    border-radius: 22px;
     background: var(--surface);
     box-shadow:
-      0 30px 60px -20px oklch(0 0 0 / 0.55),
+      0 30px 60px -24px oklch(0 0 0 / 0.55),
       0 0 0 1px color-mix(in oklch, var(--ink) 8%, transparent);
   }
-  .cover :global(img) {
+  .photo :global(img) {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: 50% 30%;
   }
-  /* A violet wash at the bottom so the photo belongs to the palette */
-  .cover::after {
-    content: '';
+
+  .sticker {
+    --x: 0px;
+    --y: 0px;
+    --lift: 1;
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top,
-      color-mix(in oklch, var(--accent) 38%, transparent),
-      transparent 45%
-    );
-    mix-blend-mode: soft-light;
-    pointer-events: none;
-  }
-  figcaption {
-    position: absolute;
-    left: 14px;
-    bottom: 12px;
     z-index: 2;
-    color: oklch(0.97 0.006 285 / 0.85);
-    font-size: 0.65rem;
+    padding: 9px 14px;
+    border-radius: 12px;
+    font-weight: 550;
+    font-size: 0.85rem;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    translate: var(--x) var(--y);
+    rotate: var(--r);
+    scale: var(--lift);
+    background: var(--ink);
+    color: var(--bg);
+    box-shadow: 0 10px 24px -10px oklch(0 0 0 / 0.5);
+    transition:
+      scale 0.25s var(--ease-out),
+      box-shadow 0.25s var(--ease-out);
+  }
+  .sticker.s1 {
+    --r: -7deg;
+    top: 9%;
+    left: -10%;
+  }
+  .sticker.s2 {
+    --r: 5deg;
+    top: 44%;
+    right: -12%;
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .sticker.s3 {
+    --r: 4deg;
+    bottom: 22%;
+    left: -8%;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .sticker.s4 {
+    --r: -4deg;
+    bottom: 6%;
+    right: -6%;
+  }
+  .sticker:hover {
+    --lift: 1.05;
+  }
+  .sticker:global(.dragging) {
+    --lift: 1.1;
+    z-index: 3;
+    cursor: grabbing;
+    box-shadow: 0 22px 40px -14px oklch(0 0 0 / 0.6);
   }
 
-  .vinyl {
-    position: absolute;
-    top: 3%;
-    left: 0;
-    width: 94%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle, transparent 0 31%, oklch(0 0 0 / 0) 31%),
-      repeating-radial-gradient(
-        circle,
-        oklch(0.13 0.01 285) 0 2px,
-        oklch(0.19 0.012 285) 2px 3px
-      );
-    box-shadow:
-      0 20px 40px -18px oklch(0 0 0 / 0.6),
-      inset 0 0 0 1px oklch(1 0 0 / 0.06);
-    transform: translateX(0) rotate(0deg);
-    transition: transform 1.2s var(--ease-out);
-  }
-  /* Light sheen across the grooves */
-  .vinyl::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: conic-gradient(
-      from 30deg,
-      transparent 0 20%,
-      oklch(1 0 0 / 0.1) 25%,
-      transparent 30% 70%,
-      oklch(1 0 0 / 0.08) 75%,
-      transparent 80%
-    );
-  }
-  .vinyl-label {
-    position: absolute;
-    inset: 34%;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--bg) 0 5%, var(--accent) 5.5%);
-    animation: spin 6s linear infinite;
-    animation-play-state: paused;
-  }
-  .vinyl-label span {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(0.8rem, 1.4vw, 1.1rem);
-    color: var(--accent-ink);
-    translate: 0 -120%;
-  }
-  .record-wrap:hover .vinyl-label {
-    animation-play-state: running;
-  }
-  @keyframes spin {
-    to {
-      rotate: 360deg;
-    }
+  .hint {
+    margin: 0;
+    font-size: 0.66rem;
   }
 
   /* ---------- intro choreography ---------- */
@@ -322,31 +311,43 @@ const letters = [...name];
   :global(.js) .eyebrow.reveal {
     transition-delay: 0s;
   }
-  :global(.js) .cover {
+  :global(.js) .photo {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.95);
     transition:
-      opacity 0.9s var(--ease-out),
-      transform 1s var(--ease-out);
+      opacity 0.8s var(--ease-out),
+      transform 0.9s var(--ease-out);
     transition-delay: 0.15s;
   }
+  /* Stickers pop on one by one, only after the photo has fully landed */
+  :global(.js) .sticker {
+    opacity: 0;
+    scale: 0.4;
+    transition:
+      opacity 0.3s var(--ease-out),
+      scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.25s var(--ease-out);
+    transition-delay: calc(1.05s + var(--i) * 0.14s);
+  }
+  :global(.js) .hint {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out) 1.8s;
+  }
   :global(.js.intro-done) .letter,
-  :global(.js.intro-done) .reveal {
+  :global(.js.intro-done) .reveal,
+  :global(.js.intro-done) .photo {
     opacity: 1;
     transform: none;
   }
-  :global(.js.intro-done) .cover {
+  :global(.js.intro-done) .sticker {
     opacity: 1;
-    transform: none;
+    scale: var(--lift);
   }
-  /* Record slides out from behind the sleeve once the intro lands */
-  :global(.intro-done) .vinyl {
-    transform: translateX(34%) rotate(160deg);
-    transition-delay: 0.6s;
-  }
-  .record-wrap:hover .vinyl {
-    transform: translateX(40%) rotate(200deg);
+  :global(.js.intro-done) .sticker:global(.settled) {
     transition-delay: 0s;
+  }
+  :global(.js.intro-done) .hint {
+    opacity: 1;
   }
 
   /* ---------- responsive ---------- */
@@ -359,14 +360,26 @@ const letters = [...name];
     }
     .media {
       order: -1;
-      justify-content: flex-start;
-      padding-right: 0;
+      align-items: flex-start;
+      padding-left: 6%;
     }
-    .record-wrap {
-      width: min(58vw, 260px);
+    .frame {
+      width: min(62vw, 280px);
     }
-    :global(.intro-done) .vinyl {
-      transform: translateX(30%) rotate(160deg);
+    .sticker {
+      font-size: 0.72rem;
+      padding: 7px 11px;
+    }
+    /* keep stickers off the face on the narrow photo */
+    .sticker.s1 {
+      top: 3%;
+    }
+    .sticker.s2 {
+      top: 52%;
+      right: -30%;
+    }
+    .sticker.s3 {
+      bottom: 14%;
     }
     .name-block {
       margin-top: 8px;
@@ -374,12 +387,8 @@ const letters = [...name];
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .vinyl-label,
     .dot {
       animation: none;
-    }
-    .record-wrap {
-      transform: none !important;
     }
   }
 </style>
@@ -422,7 +431,8 @@ const letters = [...name];
     root.classList.add('intro-done');
   }
 
-  function skip() {
+  function skip(e: Event) {
+    if ((e.target as Element)?.closest?.('[data-sticker]')) return;
     if (performance.now() - start >= INTRO_MS) return;
     start = performance.now() - INTRO_MS;
     reveal();
@@ -504,19 +514,34 @@ const letters = [...name];
     }
   } else reveal();
 
-  /* Gentle 3D tilt on the album cover (mouse only) */
-  const tilt = document.querySelector<HTMLElement>('[data-tilt]');
-  if (tilt && !reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    tilt.addEventListener('pointermove', (e) => {
-      const r = tilt.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width - 0.5;
-      const py = (e.clientY - r.top) / r.height - 0.5;
-      tilt.style.setProperty('--ry', `${px * 10}deg`);
-      tilt.style.setProperty('--rx', `${-py * 10}deg`);
+  /* ---------------------------------------------------------------
+     Draggable stickers: pick one up, drop it anywhere near the photo.
+  ---------------------------------------------------------------- */
+  document.querySelectorAll<HTMLElement>('[data-sticker]').forEach((el) => {
+    let x = 0;
+    let y = 0;
+    let sx = 0;
+    let sy = 0;
+    const LIMIT = 160; // how far a sticker can wander from its spot
+
+    // Once it has popped in, drop the entrance delay so hover/drag feel instant
+    el.addEventListener('transitionend', () => el.classList.add('settled'), { once: true });
+
+    el.addEventListener('pointerdown', (e) => {
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging', 'settled');
+      sx = e.clientX - x;
+      sy = e.clientY - y;
     });
-    tilt.addEventListener('pointerleave', () => {
-      tilt.style.setProperty('--ry', '0deg');
-      tilt.style.setProperty('--rx', '0deg');
+    el.addEventListener('pointermove', (e) => {
+      if (!el.hasPointerCapture(e.pointerId)) return;
+      x = Math.max(-LIMIT, Math.min(LIMIT, e.clientX - sx));
+      y = Math.max(-LIMIT, Math.min(LIMIT, e.clientY - sy));
+      el.style.setProperty('--x', `${x}px`);
+      el.style.setProperty('--y', `${y}px`);
     });
-  }
+    const drop = () => el.classList.remove('dragging');
+    el.addEventListener('pointerup', drop);
+    el.addEventListener('pointercancel', drop);
+  });
 </script>

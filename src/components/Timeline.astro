@@ -1,28 +1,36 @@
 ---
+// A titled section with a scroll-drawn timeline. Used for Experience and Education.
 import SectionHead from './SectionHead.astro';
-import { experience } from '../data/site';
+import type { Entry } from '../data/site';
+
+interface Props {
+  id: string;
+  n: string;
+  label: string;
+  title: string;
+  entries: Entry[];
+}
+const { id, n, label, title, entries } = Astro.props;
 ---
 
-<section id="experience" class="section" aria-labelledby="experience-h">
-  <SectionHead
-    n="01"
-    label="Experience"
-    id="experience-h"
-    title="From trading-floor systems to <em>product.</em>"
-  />
+<section id={id} class="section" aria-labelledby={`${id}-h`}>
+  <SectionHead n={n} label={label} id={`${id}-h`} title={title} />
 
   <ol class="timeline" data-timeline>
     <span class="rail" aria-hidden="true"><span class="rail-fill" data-timeline-fill></span></span>
     {
-      experience.map((e) => (
+      entries.map((e) => (
         <li class="entry">
-          <span class:list={['dot', { now: e.now }]} data-timeline-dot aria-hidden="true" />
+          <span class:list={['dot', { current: e.current }]} data-timeline-dot aria-hidden="true" />
           <div class="meta">
-            <span class="mark" aria-hidden="true">
-              {e.mark}
-            </span>
+            <span
+              class="logo"
+              role="img"
+              aria-label={e.logo.alt}
+              style={`--logo: url('${e.logo.src}'); aspect-ratio: ${e.logo.ratio};`}
+            />
             <p class="when mono">
-              {e.now && <span class="live">Now playing</span>}
+              {e.current && <span class="live">Current</span>}
               {e.when}
             </p>
             <p class="place mono">{e.place}</p>
@@ -62,7 +70,7 @@ import { experience } from '../data/site';
   }
 
   .timeline {
-    --rail-x: 196px;
+    --rail-x: 220px;
     position: relative;
     margin: 0;
     padding: 0;
@@ -108,39 +116,30 @@ import { experience } from '../data/site';
       box-shadow 0.4s var(--ease-out);
   }
   .dot:global(.lit),
-  .dot.now {
+  .dot.current {
     border-color: var(--accent);
     background: var(--accent);
     box-shadow: 0 0 0 5px color-mix(in oklch, var(--accent) 22%, transparent);
   }
 
   .meta {
-    padding-right: 32px;
+    padding-right: 36px;
   }
-  .mark {
-    display: inline-grid;
-    place-items: center;
-    min-width: 56px;
-    height: 56px;
-    padding: 0 10px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--surface);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.95rem;
-    letter-spacing: -0.01em;
-    color: var(--muted);
-    transition:
-      color 0.3s var(--ease-out),
-      border-color 0.3s var(--ease-out);
+  /* Logos drawn in one colour from the palette; they brighten on hover */
+  .logo {
+    display: block;
+    height: 28px;
+    max-width: 170px;
+    background: var(--muted);
+    -webkit-mask: var(--logo) left center / contain no-repeat;
+    mask: var(--logo) left center / contain no-repeat;
+    transition: background-color 0.3s var(--ease-out);
   }
-  .entry:hover .mark {
-    color: var(--ink);
-    border-color: var(--accent);
+  .entry:hover .logo {
+    background: var(--ink);
   }
   .when {
-    margin: 14px 0 4px;
+    margin: 16px 0 4px;
     color: var(--ink);
   }
   .live {
@@ -165,7 +164,7 @@ import { experience } from '../data/site';
     letter-spacing: -0.03em;
   }
 
-  /* Role progression shown as a little level-up track */
+  /* Role progression shown as a small promotion path */
   .roles {
     display: flex;
     flex-wrap: wrap;
@@ -237,14 +236,13 @@ import { experience } from '../data/site';
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 4px 14px;
+      gap: 8px 16px;
       padding: 0 0 16px;
     }
-    .mark {
-      min-width: 44px;
-      height: 44px;
-      font-size: 0.8rem;
-      border-radius: 11px;
+    .logo {
+      flex-basis: 100%;
+      height: 24px;
+      max-width: 150px;
     }
     .when {
       margin: 0;
@@ -252,9 +250,6 @@ import { experience } from '../data/site';
     .live {
       display: inline;
       margin-right: 8px;
-    }
-    .place {
-      flex-basis: 100%;
     }
     .body {
       padding-left: 0;

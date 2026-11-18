@@ -7,43 +7,23 @@ export const links = {
   resume: '/resume/Kalash-Jain-Resume.pdf',
 };
 
-// "Greatest hits": headline numbers, counted up on scroll
-export const hits = [
-  { value: 10000, suffix: '+', label: 'trade scenarios tested daily on a platform I co-designed' },
-  { value: 2000, suffix: '/hr', label: 'test bookings, up from about one an hour' },
-  { value: 800, suffix: '+', label: 'engineering hours saved per release' },
-  { value: 1, suffix: '%', prefix: '30% → ', label: 'false test failures, after I redesigned the comparison' },
-];
-
+export type Logo = { src: string; ratio: number; alt: string };
 export type Role = { title: string; dates: string };
 export type Entry = {
   org: string;
-  mark: string; // short monogram until real logos are added
+  logo: Logo;
   place: string;
   when: string;
   roles?: Role[];
   summary: string;
   points: string[];
-  now?: boolean;
+  current?: boolean;
 };
 
 export const experience: Entry[] = [
   {
-    org: 'UCLA Anderson School of Management',
-    mark: 'UCLA',
-    place: 'Los Angeles, CA',
-    when: 'Class of 2028',
-    now: true,
-    summary: 'MBA, Technology & AI Leadership specialization. Merit Fellowship recipient.',
-    points: [
-      'Director of Learning & Development, Tech Business Association',
-      'Director of Alumni Relations, South Asian Business Association',
-      'Recruiting for Summer 2027 product management internships',
-    ],
-  },
-  {
     org: 'JPMorgan Chase & Co.',
-    mark: 'JPMC',
+    logo: { src: '/logos/jpmorganchase.svg', ratio: 1000 / 141.83, alt: 'JPMorganChase' },
     place: 'Mumbai & Bangalore, India',
     when: '2022 – 2026',
     roles: [
@@ -52,17 +32,34 @@ export const experience: Entry[] = [
       { title: 'Software Development Engineer II', dates: '2026' },
     ],
     summary:
-      'Built the testing, automation and data platforms behind global trading desks, and did the work of getting them adopted: with ops, risk, accounting and regulatory teams.',
+      'Worked on the testing, automation and data tools used by trading and operations teams, and partnered closely with those teams to get them adopted.',
     points: [
-      'Co-designed a pre-release testing platform after a faulty change sent wrong data to regulators; it now runs 10,000+ trade scenarios a day across 10+ businesses',
-      'Made the case to replace five near-duplicate booking tools with one, won leadership sign-off, then shipped it: onboarding fell from a month to two days',
-      'Owned the migration of ~800 data feeds to AWS with accounting, settlement, credit risk and regulatory teams',
-      'Ran sprints as Scrum Master for a 20-person team for a year, and won 1st place among 500+ engineers at the firm hackathon',
+      'Co-designed a pre-release testing platform for trade bookings, used across 10+ business lines',
+      'Proposed consolidating five overlapping booking tools into one, got senior leadership sign-off, and delivered it end to end',
+      'Led the migration of ~800 data feeds to AWS alongside accounting, settlement, credit risk and regulatory teams',
+      'Ran sprints as Scrum Master for a 20-person team for a year',
+      'Won 1st place among 500+ participants in the firm-wide hackathon',
+    ],
+  },
+];
+
+export const education: Entry[] = [
+  {
+    org: 'UCLA Anderson School of Management',
+    logo: { src: '/logos/ucla-anderson.svg', ratio: 230.71 / 44, alt: 'UCLA Anderson' },
+    place: 'Los Angeles, CA',
+    when: 'Class of 2028',
+    current: true,
+    summary: 'M.B.A., Full-Time Program. Technology & AI Leadership specialization.',
+    points: [
+      'Merit Fellowship recipient',
+      'Director of Learning & Development, Tech Business Association',
+      'Director of Alumni Relations, South Asian Business Association',
     ],
   },
   {
     org: 'Punjab Engineering College',
-    mark: 'PEC',
+    logo: { src: '/logos/pec.png', ratio: 320 / 143, alt: 'PEC' },
     place: 'Chandigarh, India',
     when: 'Class of 2023',
     summary: 'B.Tech, Computer Science.',
@@ -93,12 +90,15 @@ export const projects = [
   },
 ];
 
+// Draggable stickers on the hero photo (decorative; the same facts are in the text)
+export const stickers = ['ex-JPMorgan Chase', "UCLA Anderson MBA '28", 'published poet ✎', 'builds with AI'];
+
 // Off-the-clock marquee
 export const offClock = [
-  'Published poet · 300+ poems',
-  'Lead singer & guitarist, JPMC firm band',
+  'Published poet',
+  'Writes the occasional song',
+  'Builds personal apps with AI',
+  'Former Editor-in-Chief',
   'State-level junior basketball',
-  'Hackathon winner, 1st of 500+',
-  'Builds AI agents with Claude Code',
-  'Ex Editor-in-Chief',
+  'Hackathon winner',
 ];

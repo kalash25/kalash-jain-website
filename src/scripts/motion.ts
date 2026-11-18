@@ -4,7 +4,6 @@
    - [data-split]   headings reveal line by line from a mask
    - [data-reveal]  blocks fade up as they enter (children stagger
                     when the element has data-reveal="stagger")
-   - [data-count]   numbers count up once
    - [data-timeline] its [data-timeline-fill] line draws with scroll
    Nothing is hidden before JS runs, and reduced motion skips all of it.
 ------------------------------------------------------------------- */
@@ -16,32 +15,7 @@ import 'lenis/dist/lenis.css';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function formatCount(n: number) {
-  return Math.round(n).toLocaleString('en-US');
-}
-
-function initCounts() {
-  document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
-    const target = Number(el.dataset.count);
-    if (reduce) {
-      el.textContent = formatCount(target);
-      return;
-    }
-    const state = { v: 0 };
-    el.textContent = '0';
-    gsap.to(state, {
-      v: target,
-      duration: 1.8,
-      ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 90%', once: true },
-      onUpdate: () => (el.textContent = formatCount(state.v)),
-    });
-  });
-}
-
-if (reduce) {
-  initCounts();
-} else {
+if (!reduce) {
   gsap.registerPlugin(ScrollTrigger, SplitText);
 
   /* Smooth scroll, driven by GSAP's ticker so ScrollTrigger stays in sync */
@@ -52,8 +26,6 @@ if (reduce) {
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
-
-  initCounts();
 
   /* Fade-up blocks */
   document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {

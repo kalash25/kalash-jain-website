@@ -9,7 +9,7 @@ const { n, label, title, id } = Astro.props;
 ---
 
 <div class="head">
-  <p class="mono"><span class="n">Track {n}</span> / {label}</p>
+  <p class="mono"><span class="n">{n}</span> / {label}</p>
   <h2 id={id} data-split set:html={title} />
 </div>
 

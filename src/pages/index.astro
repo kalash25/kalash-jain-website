@@ -2,11 +2,11 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Hero from '../components/Hero.astro';
-import Hits from '../components/Hits.astro';
-import Experience from '../components/Experience.astro';
+import Timeline from '../components/Timeline.astro';
 import Projects from '../components/Projects.astro';
 import About from '../components/About.astro';
 import Contact from '../components/Contact.astro';
+import { experience, education } from '../data/site';
 ---
 
 <Base>
@@ -15,8 +15,20 @@ import Contact from '../components/Contact.astro';
 
   <main>
     <Hero />
-    <Hits />
-    <Experience />
+    <Timeline
+      id="experience"
+      n="01"
+      label="Experience"
+      title="Where I've <em>worked.</em>"
+      entries={experience}
+    />
+    <Timeline
+      id="education"
+      n="02"
+      label="Education"
+      title="Where I've <em>studied.</em>"
+      entries={education}
+    />
     <Projects />
     <About />
     <Contact />
