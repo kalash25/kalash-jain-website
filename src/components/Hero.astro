@@ -668,57 +668,25 @@ const letters = [...name];
     base.remove();
 
     const paths = [...slither.querySelectorAll('path')];
-    const ease = 'cubic-bezier(0.45, 0, 0.25, 1)';
-    // Three strokes wander the track and fade; the last one ends on the right side
-    // of the photo (clear of the stickers) with a single soft ring, about a second
-    // after the stickers have landed.
     const plan = [
-      { start: 0.52, seg: 0.08, travel: 0.36, delay: 300, dur: 2500 },
-      { start: 0.74, seg: 0.12, travel: 0.3, delay: 500, dur: 2400 },
-      { start: 0.02, seg: 0.11, travel: 0.21, delay: 650, dur: 2400, pop: true },
+      { start: 0.02, seg: 0.11, travel: 0.42, delay: 250, dur: 2800 },
+      { start: 0.52, seg: 0.08, travel: 0.38, delay: 450, dur: 2650 },
+      { start: 0.77, seg: 0.13, travel: 0.3, delay: 650, dur: 2450 },
     ];
     paths.forEach((path, i) => {
       const p = plan[i];
       path.setAttribute('d', d);
       const len = path.getTotalLength();
       path.style.strokeDasharray = `${p.seg * len} ${len}`;
-      const anim = path.animate(
-        p.pop
-          ? [
-              { strokeDashoffset: -p.start * len, opacity: 0 },
-              { opacity: 1, offset: 0.15 },
-              { strokeDashoffset: -(p.start + p.travel) * len, opacity: 1 },
-            ]
-          : [
-              { strokeDashoffset: -p.start * len, opacity: 0 },
-              { opacity: 1, offset: 0.15 },
-              { opacity: 1, offset: 0.75 },
-              { strokeDashoffset: -(p.start + p.travel) * len, opacity: 0 },
-            ],
-        { duration: p.dur, delay: p.delay, easing: ease, fill: 'both' },
+      path.animate(
+        [
+          { strokeDashoffset: -p.start * len, opacity: 0 },
+          { opacity: 1, offset: 0.15 },
+          { opacity: 1, offset: 0.75 },
+          { strokeDashoffset: -(p.start + p.travel) * len, opacity: 0 },
+        ],
+        { duration: p.dur, delay: p.delay, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'both' },
       );
-      if (!p.pop) return;
-      anim.finished
-        .then(() => {
-          path.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' });
-          const pt = path.getPointAtLength((p.start + p.travel + p.seg) * len);
-          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          ring.setAttribute('cx', String(pt.x));
-          ring.setAttribute('cy', String(pt.y));
-          ring.setAttribute('r', '14');
-          ring.setAttribute(
-            'style',
-            'fill: none; stroke: var(--accent); stroke-width: 2; transform-box: fill-box; transform-origin: center;',
-          );
-          slither.appendChild(ring);
-          ring
-            .animate([{ scale: 0.1, opacity: 1 }, { scale: 1.6, opacity: 0 }], {
-              duration: 800,
-              easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)',
-            })
-            .finished.then(() => ring.remove());
-        })
-        .catch(() => {});
     });
   }
   if (root.classList.contains('intro-done')) runSlithers();
