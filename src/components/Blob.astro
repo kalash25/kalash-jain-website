@@ -1,0 +1,240 @@
+<!--
+  A small violet blob that peeks in from the bottom-right corner when you reach a
+  new section, watches your cursor, and says something when clicked.
+  Purely decorative: hidden from screen readers and absent with reduced motion.
+-->
+<div class="blob" data-blob aria-hidden="true">
+  <div class="body">
+    <span class="eye l"><span class="pupil"></span></span>
+    <span class="eye r"><span class="pupil"></span></span>
+    <span class="mouth"></span>
+  </div>
+</div>
+
+<style>
+  .blob {
+    --px: 0px;
+    --py: 0px;
+    position: fixed;
+    right: clamp(14px, 3vw, 36px);
+    bottom: 0;
+    z-index: 40;
+    width: 88px;
+    height: 88px;
+    translate: 0 115%;
+    rotate: -10deg;
+    cursor: pointer;
+    transition:
+      translate 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
+      rotate 0.7s var(--ease-out);
+  }
+  .blob.peek {
+    translate: 0 48%;
+    rotate: -6deg;
+  }
+  .blob.peek:hover,
+  .blob.curious {
+    translate: 0 22%;
+    rotate: 0deg;
+  }
+
+  .body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at 34% 28%,
+      color-mix(in oklch, var(--accent) 55%, white),
+      var(--accent) 48%,
+      color-mix(in oklch, var(--accent) 70%, black)
+    );
+    border-radius: 46% 54% 52% 48% / 55% 48% 52% 45%;
+    box-shadow:
+      0 18px 40px -12px color-mix(in oklch, var(--accent) 60%, transparent),
+      inset -6px -8px 16px oklch(0 0 0 / 0.18);
+    animation: morph 7s ease-in-out infinite;
+  }
+  .blob.boop .body {
+    animation:
+      morph 7s ease-in-out infinite,
+      boop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes morph {
+    33% {
+      border-radius: 58% 42% 45% 55% / 45% 58% 42% 55%;
+    }
+    66% {
+      border-radius: 40% 60% 60% 40% / 52% 44% 56% 48%;
+    }
+  }
+  @keyframes boop {
+    40% {
+      scale: 1.12 0.9;
+    }
+    70% {
+      scale: 0.95 1.06;
+    }
+  }
+
+  .eye {
+    position: absolute;
+    top: 28%;
+    width: 19%;
+    height: 24%;
+    border-radius: 50%;
+    background: oklch(0.99 0 0);
+    overflow: hidden;
+    animation: blink 5s infinite;
+  }
+  .eye.l {
+    left: 26%;
+  }
+  .eye.r {
+    right: 26%;
+  }
+  .pupil {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 52%;
+    height: 44%;
+    border-radius: 50%;
+    background: oklch(0.16 0.03 285);
+    translate: var(--px) var(--py);
+    transition: translate 0.15s linear;
+  }
+  @keyframes blink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  .mouth {
+    position: absolute;
+    left: 50%;
+    top: 60%;
+    width: 16%;
+    height: 8%;
+    translate: -50% 0;
+    border-bottom: 2.5px solid oklch(0.16 0.03 285);
+    border-radius: 0 0 999px 999px;
+    transition:
+      height 0.25s var(--ease-out),
+      width 0.25s var(--ease-out);
+  }
+  .blob:hover .mouth,
+  .blob.boop .mouth {
+    width: 22%;
+    height: 12%;
+  }
+
+  @media (max-width: 760px) {
+    .blob {
+      width: 64px;
+      height: 64px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blob {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const blob = document.querySelector<HTMLElement>('[data-blob]');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (blob && !reduce) {
+    const quips = [
+      "Hi. I'm the unpaid intern.",
+      "I've read the resume. Twice. Strong hire.",
+      'Not a feature request. Just saying hi.',
+      'Psst: the stickers up top are draggable.',
+      "Kalash calls me scope creep. I'm staying.",
+      'The email button copies itself. Very efficient.',
+    ];
+    let q = 0;
+    let hideTimer = 0;
+    let hovering = false;
+
+    const peek = (ms: number) => {
+      blob.classList.add('peek');
+      clearTimeout(hideTimer);
+      if (ms > 0) {
+        hideTimer = window.setTimeout(() => {
+          if (!hovering) blob.classList.remove('peek');
+        }, ms);
+      }
+    };
+
+    // Peek once per section as it arrives; settle in for good at Contact
+    const seen = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting || seen.has(e.target.id)) continue;
+          seen.add(e.target.id);
+          peek(e.target.id === 'contact' ? 0 : 2600);
+        }
+      },
+      { rootMargin: '0px 0px -55% 0px' },
+    );
+    ['experience', 'education', 'projects', 'about', 'contact'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+    // Back at the top: duck out of the way
+    const top = document.getElementById('top');
+    if (top) {
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) {
+          blob.classList.remove('peek');
+          seen.delete('contact');
+        }
+      }).observe(top);
+    }
+
+    blob.addEventListener('pointerenter', () => {
+      hovering = true;
+      clearTimeout(hideTimer);
+    });
+    blob.addEventListener('pointerleave', () => {
+      hovering = false;
+      if (!seen.has('contact')) hideTimer = window.setTimeout(() => blob.classList.remove('peek'), 1200);
+    });
+
+    blob.addEventListener('click', () => {
+      if (!blob.classList.contains('peek')) return;
+      blob.classList.remove('boop');
+      void blob.offsetWidth; // restart the squish
+      blob.classList.add('boop');
+      dispatchEvent(new CustomEvent('toast', { detail: quips[q++ % quips.length] }));
+    });
+
+    // Eyes follow the cursor
+    let raf = 0;
+    addEventListener(
+      'pointermove',
+      (e) => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const r = blob.getBoundingClientRect();
+          const dx = e.clientX - (r.left + r.width / 2);
+          const dy = e.clientY - (r.top + r.height / 2);
+          const len = Math.hypot(dx, dy) || 1;
+          const reach = r.width * 0.035;
+          blob.style.setProperty('--px', `${(dx / len) * reach}px`);
+          blob.style.setProperty('--py', `${(dy / len) * reach}px`);
+        });
+      },
+      { passive: true },
+    );
+  }
+</script>
