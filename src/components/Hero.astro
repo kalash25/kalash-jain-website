@@ -668,26 +668,76 @@ const letters = [...name];
     base.remove();
 
     const paths = [...slither.querySelectorAll('path')];
-    const plan = [
-      { start: 0.02, seg: 0.11, travel: 0.42, delay: 250, dur: 2300 },
-      { start: 0.52, seg: 0.08, travel: 0.38, delay: 450, dur: 2150 },
-      { start: 0.77, seg: 0.13, travel: 0.3, delay: 650, dur: 1950 },
-    ];
-    paths.forEach((path, i) => {
-      const p = plan[i];
-      path.setAttribute('d', d);
-      const len = path.getTotalLength();
-      path.style.strokeDasharray = `${p.seg * len} ${len}`;
+    paths.forEach((p) => p.setAttribute('d', d));
+    const len = paths[0].getTotalLength();
+    const ease = 'cubic-bezier(0.45, 0, 0.25, 1)';
+    const NS = 'http://www.w3.org/2000/svg';
+
+    // Where the two "chasers" meet: on the bottom edge, near the stickers
+    const meet = 0.6;
+    const MEET_AT = 3000; // ms after the intro lands; the stickers finish around 2s
+
+    // A drifter that just wanders a stretch of the track and fades away
+    paths[2].style.strokeDasharray = `${0.12 * len} ${len}`;
+    paths[2].animate(
+      [
+        { strokeDashoffset: -0.3 * len, opacity: 0 },
+        { opacity: 1, offset: 0.15 },
+        { opacity: 1, offset: 0.7 },
+        { strokeDashoffset: -0.02 * len, opacity: 0 },
+      ],
+      { duration: 2300, delay: 600, easing: ease, fill: 'both' },
+    );
+
+    // Two chasers come round from opposite directions, shrinking as they close in
+    const chase = (path: SVGPathElement, from: number, seg: number, delay: number) =>
       path.animate(
         [
-          { strokeDashoffset: -p.start * len, opacity: 0 },
-          { opacity: 1, offset: 0.15 },
-          { opacity: 1, offset: 0.75 },
-          { strokeDashoffset: -(p.start + p.travel) * len, opacity: 0 },
+          { strokeDashoffset: -from * len, strokeDasharray: `${seg * len} ${len}`, opacity: 0 },
+          { opacity: 1, offset: 0.12 },
+          { strokeDashoffset: -meet * len, strokeDasharray: `0.5 ${len}`, opacity: 1 },
         ],
-        { duration: p.dur, delay: p.delay, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'both' },
+        { duration: MEET_AT - delay, delay, easing: 'cubic-bezier(0.5, 0, 0.2, 1)', fill: 'both' },
       );
-    });
+    chase(paths[0], meet - 0.5, 0.12, 250);
+    const last = chase(paths[1], meet + 0.3, 0.09, 450);
+
+    // ...and meet in a small burst: a spark, a ring, a few flecks
+    last.finished
+      .then(() => {
+        paths.forEach((p) => p.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' }));
+        const pt = paths[0].getPointAtLength(meet * len);
+        const make = (r: number, fill: boolean) => {
+          const c = document.createElementNS(NS, 'circle');
+          c.setAttribute('cx', String(pt.x));
+          c.setAttribute('cy', String(pt.y));
+          c.setAttribute('r', String(r));
+          c.setAttribute('style', `transform-box: fill-box; transform-origin: center; ${
+            fill ? 'fill: var(--accent); stroke: none;' : 'fill: none; stroke: var(--accent); stroke-width: 2;'
+          }`);
+          slither.appendChild(c);
+          return c;
+        };
+        const done = (el: Element) => (a: Animation) => a.finished.then(() => el.remove());
+        const ring = make(16, false);
+        done(ring)(ring.animate([{ scale: 0, opacity: 1 }, { scale: 1.7, opacity: 0 }], { duration: 750, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)' }));
+        const spark = make(5, true);
+        done(spark)(spark.animate([{ scale: 0.3, opacity: 0 }, { scale: 1.5, opacity: 1, offset: 0.25 }, { scale: 0, opacity: 0 }], { duration: 600 }));
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * Math.PI * 2 + 0.3;
+          const fleck = make(1.8, true);
+          done(fleck)(
+            fleck.animate(
+              [
+                { translate: '0 0', opacity: 1 },
+                { translate: `${Math.cos(ang) * 26}px ${Math.sin(ang) * 26}px`, opacity: 0 },
+              ],
+              { duration: 650, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)' },
+            ),
+          );
+        }
+      })
+      .catch(() => {});
   }
   if (root.classList.contains('intro-done')) runSlithers();
   else addEventListener('intro:done', runSlithers, { once: true });

@@ -9,39 +9,40 @@
     <div class="critter" data-critter>
       <svg viewBox="0 0 100 100" class="art">
         <g class="ear ear-l">
-          <path class="fill outline" d="M22 40 L17 9 Q18 4 23 7 L45 28 Z"></path>
+          <path class="fill" d="M22 40 L17 9 Q18 4 23 7 L45 28 Z"></path>
           <path class="inner" d="M25 32 L22 15 L36 28 Z"></path>
         </g>
         <g class="ear ear-r">
-          <path class="fill outline" d="M78 40 L83 9 Q82 4 77 7 L55 28 Z"></path>
+          <path class="fill" d="M78 40 L83 9 Q82 4 77 7 L55 28 Z"></path>
           <path class="inner" d="M75 32 L78 15 L64 28 Z"></path>
         </g>
 
-        <rect class="fill outline" x="12" y="24" width="76" height="74" rx="22"></rect>
+        <rect class="fill" x="12" y="24" width="76" height="74" rx="24"></rect>
+        <!-- a soft top light so the flat shape still has some form -->
+        <rect class="sheen" x="12" y="24" width="76" height="30" rx="24"></rect>
 
-        <ellipse class="blush" cx="27" cy="64" rx="6" ry="3.5"></ellipse>
-        <ellipse class="blush" cx="73" cy="64" rx="6" ry="3.5"></ellipse>
-
+        <!-- solid pill eyes with a small catch-light; they narrow while it crawls -->
         <g class="eyes">
-          <rect class="eye" x="32" y="44" width="11" height="17" rx="5.5"></rect>
-          <rect class="eye" x="57" y="44" width="11" height="17" rx="5.5"></rect>
-          <g class="pupils">
-            <circle cx="37.5" cy="53" r="3.6"></circle>
-            <circle cx="62.5" cy="53" r="3.6"></circle>
+          <g class="eye">
+            <rect x="33" y="45" width="9" height="15" rx="4.5"></rect>
+            <circle class="glint" cx="39" cy="49" r="1.6"></circle>
+          </g>
+          <g class="eye">
+            <rect x="58" y="45" width="9" height="15" rx="4.5"></rect>
+            <circle class="glint" cx="64" cy="49" r="1.6"></circle>
           </g>
         </g>
-        <path class="mouth" d="M45 67 Q50 71 55 67"></path>
 
         <!-- paws: three toe beans each, hooked over the screen edge -->
         <g class="paw paw-l">
-          <circle class="paw-fill outline" cx="21" cy="84" r="5"></circle>
-          <circle class="paw-fill outline" cx="29.5" cy="81.5" r="5.2"></circle>
-          <circle class="paw-fill outline" cx="38" cy="84" r="5"></circle>
+          <circle class="paw-fill" cx="21" cy="84" r="5"></circle>
+          <circle class="paw-fill" cx="29.5" cy="81.5" r="5.2"></circle>
+          <circle class="paw-fill" cx="38" cy="84" r="5"></circle>
         </g>
         <g class="paw paw-r">
-          <circle class="paw-fill outline" cx="62" cy="84" r="5"></circle>
-          <circle class="paw-fill outline" cx="70.5" cy="81.5" r="5.2"></circle>
-          <circle class="paw-fill outline" cx="79" cy="84" r="5"></circle>
+          <circle class="paw-fill" cx="62" cy="84" r="5"></circle>
+          <circle class="paw-fill" cx="70.5" cy="81.5" r="5.2"></circle>
+          <circle class="paw-fill" cx="79" cy="84" r="5"></circle>
         </g>
       </svg>
     </div>
@@ -100,44 +101,43 @@
   .fill {
     fill: var(--accent);
   }
-  .paw-fill {
-    fill: color-mix(in oklch, var(--accent) 82%, white);
-  }
-  .outline {
-    stroke: color-mix(in oklch, var(--accent) 45%, black);
-    stroke-width: 2.5;
-    stroke-linejoin: round;
+  .sheen {
+    fill: oklch(1 0 0 / 0.08);
   }
   .inner {
-    fill: color-mix(in oklch, var(--accent) 55%, white);
+    fill: color-mix(in oklch, var(--accent) 60%, white);
   }
-  .blush {
-    fill: oklch(0.78 0.12 350 / 0.45);
+  .paw-fill {
+    fill: color-mix(in oklch, var(--accent) 78%, white);
+    stroke: color-mix(in oklch, var(--accent) 85%, black);
+    stroke-width: 0.8;
+  }
+  .eyes {
+    fill: oklch(0.2 0.05 285);
+    translate: var(--px) var(--py);
+    transition: translate 0.2s var(--ease-out);
   }
   .eye {
-    fill: oklch(0.99 0 0);
     transform-box: fill-box;
     transform-origin: center;
     animation: blink 5.5s infinite;
+    transition: scale 0.3s var(--ease-out);
   }
-  .pupils {
-    fill: oklch(0.2 0.05 285);
-    translate: var(--px) var(--py);
-    transition: translate 0.15s linear;
+  .glint {
+    fill: oklch(1 0 0 / 0.85);
   }
-  .mouth {
-    fill: none;
-    stroke: color-mix(in oklch, var(--accent) 45%, black);
-    stroke-width: 2;
-    stroke-linecap: round;
+  /* Crawling: eyes narrow into focused slits, looking where it's headed */
+  .walking .eye {
+    animation: none;
+    scale: 1 0.38;
   }
-  .mouth {
-    opacity: 0;
-    transition: opacity 0.2s var(--ease-out);
+  .walking .eyes {
+    translate: var(--look, 0px) 0px;
   }
-  .critter:hover .mouth,
-  .critter.boop .mouth {
-    opacity: 1;
+  /* Hover: a contented squint */
+  .critter:hover .eye {
+    animation: none;
+    scale: 1 0.55;
   }
 
   /* Ears twitch now and then, and perk up on hover */
@@ -194,20 +194,20 @@
       rotate: 0deg;
     }
     91% {
-      rotate: -10deg;
+      rotate: -6deg;
     }
     94% {
-      rotate: 4deg;
+      rotate: 1deg;
     }
   }
   @keyframes step {
     50% {
-      translate: 0 -4px;
+      translate: 0 -3px;
     }
   }
   @keyframes bob {
     50% {
-      rotate: 2deg;
+      rotate: 1deg;
     }
   }
   @keyframes boop {
@@ -286,6 +286,7 @@
       let dir = along < 0.5 ? 1 : -1;
       if (rot === -90) dir = -dir;
       walker!.classList.add('walking');
+      walker!.style.setProperty('--look', `${dir * 3}px`);
       walker!.style.setProperty('--walk', `${dir * rand(70, 130)}px`);
       clearTimeout(walkTimer);
       walkTimer = window.setTimeout(() => walker!.classList.remove('walking'), 2200);
@@ -373,8 +374,8 @@
           const lx = dx * Math.cos(t) + dy * Math.sin(t);
           const ly = -dx * Math.sin(t) + dy * Math.cos(t);
           const len = Math.hypot(lx, ly) || 1;
-          critter.style.setProperty('--px', `${(lx / len) * 1.8}px`);
-          critter.style.setProperty('--py', `${(ly / len) * 3.2}px`);
+          critter.style.setProperty('--px', `${(lx / len) * 2.2}px`);
+          critter.style.setProperty('--py', `${(ly / len) * 2.6}px`);
         });
       },
       { passive: true },
