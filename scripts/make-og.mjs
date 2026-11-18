@@ -1,4 +1,4 @@
-// Renders the 1200×630 share image (public/og.jpg) used by LinkedIn, Slack, iMessage, etc.
+// Renders the share image (public/og-v2.jpg, 2400×1260: a 1200×630 card at 2x) used by LinkedIn, Slack, iMessage, etc.
 // Run with: npm run og   (macOS, needs Google Chrome installed)
 //
 // It builds a small HTML card with the site's own fonts, colours and portrait,
@@ -17,7 +17,7 @@ const b64 = (p) => readFileSync(p).toString('base64');
 const display = b64('node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2');
 const body = b64('node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2');
 const mono = b64('node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2');
-const photo = (await sharp('src/assets/portrait-dark.webp').resize(760).jpeg({ quality: 90 }).toBuffer()).toString('base64');
+const photo = (await sharp('src/assets/portrait-dark.webp').jpeg({ quality: 95 }).toBuffer()).toString('base64');
 
 // Same waveform shape as the hero, frozen at a nice moment
 let wave = '';
@@ -40,7 +40,7 @@ body { background: var(--bg); color: var(--ink); font-family: B; position: relat
 .glow { position: absolute; width: 900px; height: 900px; left: 420px; top: -150px;
   background: radial-gradient(closest-side, oklch(0.52 0.24 285 / 0.42), transparent 70%); }
 .copy { position: absolute; left: 76px; top: 70px; width: 640px; }
-.eyebrow { font-family: M; font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.eyebrow { font-family: M; font-weight: 500; font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .eyebrow b { color: var(--accent); font-weight: 400; }
 h1 { font-family: D; font-weight: 700; font-variation-settings: 'opsz' 96; font-size: 118px;
   line-height: 0.95; letter-spacing: -0.045em; margin-top: 22px; }
@@ -49,12 +49,12 @@ svg path { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: r
 .line { font-family: D; font-weight: 500; font-variation-settings: 'opsz' 48; font-size: 44px;
   line-height: 1.12; letter-spacing: -0.025em; }
 .line em { font-style: normal; color: var(--accent); }
-.status { position: absolute; left: 76px; bottom: 62px; display: flex; align-items: center; gap: 14px;
-  font-family: M; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.status { position: absolute; left: 76px; bottom: 58px; display: flex; align-items: center; gap: 14px;
+  font-family: M; font-weight: 500; font-size: 21px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--accent);
   box-shadow: 0 0 0 6px oklch(0.72 0.16 285 / 0.22); }
-.url { position: absolute; right: 76px; bottom: 62px; width: 392px; text-align: center;
-  font-family: M; font-size: 18px; letter-spacing: 0.08em; color: var(--ink); }
+.url { position: absolute; right: 76px; bottom: 58px; width: 392px; text-align: center;
+  font-family: M; font-weight: 500; font-size: 22px; letter-spacing: 0.04em; color: var(--ink); }
 .photo { position: absolute; right: 76px; top: 56px; width: 392px; height: 466px; border-radius: 28px;
   overflow: hidden; box-shadow: 0 40px 80px -30px oklch(0 0 0 / 0.7), 0 0 0 1px oklch(1 0 0 / 0.08); }
 .photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; display: block; }
@@ -79,13 +79,17 @@ execFileSync(CHROME, [
   '--headless=new',
   '--disable-gpu',
   '--hide-scrollbars',
-  '--force-device-scale-factor=1',
+  '--force-device-scale-factor=2', // render at 2x so it stays sharp after LinkedIn rescales it
   `--window-size=${W},${H}`,
   '--virtual-time-budget=3000',
   `--screenshot=${shot}`,
   `file://${page}`,
 ], { stdio: 'ignore' });
 
-await sharp(shot).resize(W, H).jpeg({ quality: 88, mozjpeg: true }).toFile('public/og.jpg');
+// 4:4:4 chroma keeps coloured text crisp (JPEG's default halves colour resolution)
+await sharp(shot)
+  .resize(W * 2, H * 2)
+  .jpeg({ quality: 90, mozjpeg: true, chromaSubsampling: '4:4:4' })
+  .toFile('public/og-v2.jpg');
 rmSync(dir, { recursive: true, force: true });
-console.log('Wrote public/og.jpg (1200×630)');
+console.log('Wrote public/og-v2.jpg (2400×1260)');

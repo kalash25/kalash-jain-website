@@ -18,7 +18,7 @@ const {
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 // Share image for LinkedIn, Slack, iMessage, X etc. (regenerate with `npm run og`)
-const shareImage = new URL('/og.jpg', Astro.site);
+const shareImage = new URL('/og-v2.jpg', Astro.site);
 ---
 
 <!doctype html>
@@ -43,8 +43,8 @@ const shareImage = new URL('/og.jpg', Astro.site);
     <meta property="og:image" content={shareImage} />
     <meta property="og:image:secure_url" content={shareImage} />
     <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
     <meta property="og:image:alt" content="Kalash Jain, UCLA Anderson MBA '28 and ex-JPMorgan Chase: product thinker with an engineer's toolkit." />
     <meta name="author" content="Kalash Jain" />
     <meta name="twitter:card" content="summary_large_image" />
