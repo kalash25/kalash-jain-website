@@ -71,6 +71,11 @@ const letters = [...name];
           fetchpriority="high"
         />
       </figure>
+      <svg class="slither" data-slither aria-hidden="true">
+        <path></path>
+        <path></path>
+        <path></path>
+      </svg>
       </div>
 
       <div class="sheet" aria-hidden="true">
@@ -223,7 +228,25 @@ const letters = [...name];
     position: relative;
     width: min(100%, 400px);
   }
+  /* Purple strokes that snake around the photo during the intro, then vanish */
+  .slither {
+    position: absolute;
+    inset: -14px;
+    width: calc(100% + 28px);
+    height: calc(100% + 28px);
+    overflow: visible;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px color-mix(in oklch, var(--accent) 70%, transparent));
+  }
+  .slither path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    opacity: 0;
+  }
   .tilt {
+    position: relative;
     --rx: 0deg;
     --ry: 0deg;
     transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
@@ -605,6 +628,69 @@ const letters = [...name];
     el.addEventListener('pointerup', drop);
     el.addEventListener('pointercancel', drop);
   });
+
+  /* ---------------------------------------------------------------
+     Slithers: three strokes travel a gently wavy track around the photo,
+     entering as it appears and fading out after the last sticker lands.
+  ---------------------------------------------------------------- */
+  const slither = document.querySelector<SVGSVGElement>('[data-slither]');
+  function runSlithers() {
+    if (!slither || reduce) return;
+    const { width: w, height: h } = slither.getBoundingClientRect();
+    if (!w || !h) return;
+    slither.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+    // Rounded-rectangle track just outside the photo, sampled into points
+    const inset = 4;
+    const rad = 34;
+    const base = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const x0 = inset, y0 = inset, x1 = w - inset, y1 = h - inset;
+    base.setAttribute(
+      'd',
+      `M${x0 + rad} ${y0} H${x1 - rad} A${rad} ${rad} 0 0 1 ${x1} ${y0 + rad} V${y1 - rad} ` +
+        `A${rad} ${rad} 0 0 1 ${x1 - rad} ${y1} H${x0 + rad} A${rad} ${rad} 0 0 1 ${x0} ${y1 - rad} ` +
+        `V${y0 + rad} A${rad} ${rad} 0 0 1 ${x0 + rad} ${y0} Z`,
+    );
+    slither.appendChild(base);
+    const L = base.getTotalLength();
+    const steps = Math.round(L / 4);
+    let d = '';
+    for (let i = 0; i <= steps; i++) {
+      const s = (i / steps) * L;
+      const p = base.getPointAtLength(s);
+      const q = base.getPointAtLength(Math.min(L, s + 1));
+      const nx = -(q.y - p.y);
+      const ny = q.x - p.x;
+      const n = Math.hypot(nx, ny) || 1;
+      const wob = Math.sin((s / L) * Math.PI * 2 * 14) * 3.2; // the "slither"
+      d += `${i ? 'L' : 'M'}${(p.x + (nx / n) * wob).toFixed(1)} ${(p.y + (ny / n) * wob).toFixed(1)}`;
+    }
+    base.remove();
+
+    const paths = [...slither.querySelectorAll('path')];
+    const plan = [
+      { start: 0.02, seg: 0.11, travel: 0.42, delay: 250, dur: 2300 },
+      { start: 0.52, seg: 0.08, travel: 0.38, delay: 450, dur: 2150 },
+      { start: 0.77, seg: 0.13, travel: 0.3, delay: 650, dur: 1950 },
+    ];
+    paths.forEach((path, i) => {
+      const p = plan[i];
+      path.setAttribute('d', d);
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = `${p.seg * len} ${len}`;
+      path.animate(
+        [
+          { strokeDashoffset: -p.start * len, opacity: 0 },
+          { opacity: 1, offset: 0.15 },
+          { opacity: 1, offset: 0.75 },
+          { strokeDashoffset: -(p.start + p.travel) * len, opacity: 0 },
+        ],
+        { duration: p.dur, delay: p.delay, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'both' },
+      );
+    });
+  }
+  if (root.classList.contains('intro-done')) runSlithers();
+  else addEventListener('intro:done', runSlithers, { once: true });
 
   /* Mouse-only touches: photo tilt, and name letters that lift near the cursor */
   if (!reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {

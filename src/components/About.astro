@@ -2,10 +2,13 @@
 import { Picture } from 'astro:assets';
 import SectionHead from './SectionHead.astro';
 import photo from '../assets/portrait-ucla.jpg';
-import { offClock } from '../data/site';
+import { skills } from '../data/site';
 
-// Short list, so repeat it to fill the ticker without gaps
-const ticker = [...offClock, ...offClock, ...offClock];
+// Two rows drifting in opposite directions; each list is doubled so the loop never shows a gap
+const rows = [
+  { label: 'Product & AI', items: [...skills.product, ...skills.product], kind: 'product' },
+  { label: 'Technical', items: [...skills.technical, ...skills.technical], kind: 'tech' },
+];
 ---
 
 <section id="about" class="section" aria-labelledby="about-h">
@@ -51,24 +54,29 @@ const ticker = [...offClock, ...offClock, ...offClock];
     </div>
   </div>
 
-  <!-- Off-the-clock ticker; pauses on hover, static for reduced motion -->
-  <div class="marquee" aria-label="Off the clock">
-    <div class="track">
-      {
-        [0, 1].map((copy) => (
-          <ul aria-hidden={copy === 1 ? 'true' : undefined}>
-            {ticker.map((item) => (
-              <li>
-                {item}
-                <span class="sep" aria-hidden="true">
-                  ✦
-                </span>
-              </li>
+  <!-- Toolkit ticker: two rows in opposite directions; static for reduced motion -->
+  <div class="toolkit">
+    <p class="mono kit-label">Toolkit</p>
+    {
+      rows.map((row) => (
+        <div class:list={['marquee', row.kind]} aria-label={row.label}>
+          <div class="track">
+            {[0, 1].map((copy) => (
+              <ul aria-hidden={copy === 1 ? 'true' : undefined}>
+                {row.items.map((item) => (
+                  <li>
+                    {item}
+                    <span class="sep" aria-hidden="true">
+                      ✦
+                    </span>
+                  </li>
+                ))}
+              </ul>
             ))}
-          </ul>
-        ))
-      }
-    </div>
+          </div>
+        </div>
+      ))
+    }
   </div>
 </section>
 
@@ -135,19 +143,30 @@ const ticker = [...offClock, ...offClock, ...offClock];
     letter-spacing: -0.01em;
   }
 
-  .marquee {
+  .toolkit {
     margin-top: clamp(56px, 7vw, 96px);
-    border-block: 1px solid var(--line);
-    padding: 18px 0;
+    border-top: 1px solid var(--line);
+  }
+  .kit-label {
+    margin: 18px 0 4px;
+    color: var(--accent);
+  }
+  .marquee {
+    padding: 12px 0;
     mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee.tech {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
   }
   .track {
     display: flex;
     width: max-content;
-    animation: scroll 38s linear infinite;
+    animation: scroll 46s linear infinite;
   }
-  .marquee:hover .track {
-    animation-play-state: paused;
+  .tech .track {
+    animation-duration: 56s;
+    animation-direction: reverse;
   }
   .track ul {
     display: flex;
@@ -163,6 +182,14 @@ const ticker = [...offClock, ...offClock, ...offClock];
     font-weight: 500;
     font-size: clamp(1.1rem, 2vw, 1.5rem);
     letter-spacing: -0.02em;
+  }
+  .tech .track li {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
   .sep {
     margin: 0 28px;

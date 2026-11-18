@@ -1,0 +1,383 @@
+<!--
+  A small boxy critter with pointed ears that grips the edge of the screen, peeks in
+  when you reach a new section, crawls a few steps along the edge, and ducks back out.
+  Its eyes follow the cursor; clicking it gets a one-liner.
+  Decorative only: hidden from screen readers and absent with reduced motion.
+-->
+<div class="anchor" data-critter-anchor aria-hidden="true">
+  <div class="walker" data-critter-walker>
+    <div class="critter" data-critter>
+      <svg viewBox="0 0 100 100" class="art">
+        <g class="ear ear-l">
+          <path class="fill outline" d="M22 40 L17 9 Q18 4 23 7 L45 28 Z"></path>
+          <path class="inner" d="M25 32 L22 15 L36 28 Z"></path>
+        </g>
+        <g class="ear ear-r">
+          <path class="fill outline" d="M78 40 L83 9 Q82 4 77 7 L55 28 Z"></path>
+          <path class="inner" d="M75 32 L78 15 L64 28 Z"></path>
+        </g>
+
+        <rect class="fill outline" x="12" y="24" width="76" height="74" rx="22"></rect>
+
+        <ellipse class="blush" cx="27" cy="64" rx="6" ry="3.5"></ellipse>
+        <ellipse class="blush" cx="73" cy="64" rx="6" ry="3.5"></ellipse>
+
+        <g class="eyes">
+          <rect class="eye" x="32" y="44" width="11" height="17" rx="5.5"></rect>
+          <rect class="eye" x="57" y="44" width="11" height="17" rx="5.5"></rect>
+          <g class="pupils">
+            <circle cx="37.5" cy="53" r="3.6"></circle>
+            <circle cx="62.5" cy="53" r="3.6"></circle>
+          </g>
+        </g>
+        <path class="mouth" d="M45 67 Q50 71 55 67"></path>
+
+        <!-- paws: three toe beans each, hooked over the screen edge -->
+        <g class="paw paw-l">
+          <circle class="paw-fill outline" cx="21" cy="84" r="5"></circle>
+          <circle class="paw-fill outline" cx="29.5" cy="81.5" r="5.2"></circle>
+          <circle class="paw-fill outline" cx="38" cy="84" r="5"></circle>
+        </g>
+        <g class="paw paw-r">
+          <circle class="paw-fill outline" cx="62" cy="84" r="5"></circle>
+          <circle class="paw-fill outline" cx="70.5" cy="81.5" r="5.2"></circle>
+          <circle class="paw-fill outline" cx="79" cy="84" r="5"></circle>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* The anchor is a point on a screen edge, rotated so "up" points into the page */
+  .anchor {
+    --rot: 0deg;
+    position: fixed;
+    left: 85%;
+    top: 100%;
+    z-index: 40;
+    width: 0;
+    height: 0;
+    rotate: var(--rot);
+    pointer-events: none;
+  }
+  .walker {
+    --walk: 0px;
+    translate: var(--walk) 0;
+  }
+  .walker.walking {
+    transition: translate 2.2s linear;
+  }
+
+  .critter {
+    --size: 66px;
+    --px: 0px;
+    --py: 0px;
+    position: absolute;
+    left: calc(var(--size) / -2);
+    bottom: 0;
+    width: var(--size);
+    height: var(--size);
+    translate: 0 105%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: translate 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  /* Peek just far enough for the paws to hook over the edge */
+  .critter.peek {
+    translate: 0 12%;
+  }
+  .critter.peek:hover {
+    translate: 0 4%;
+  }
+
+  .art {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .fill {
+    fill: var(--accent);
+  }
+  .paw-fill {
+    fill: color-mix(in oklch, var(--accent) 82%, white);
+  }
+  .outline {
+    stroke: color-mix(in oklch, var(--accent) 45%, black);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+  .inner {
+    fill: color-mix(in oklch, var(--accent) 55%, white);
+  }
+  .blush {
+    fill: oklch(0.78 0.12 350 / 0.45);
+  }
+  .eye {
+    fill: oklch(0.99 0 0);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink 5.5s infinite;
+  }
+  .pupils {
+    fill: oklch(0.2 0.05 285);
+    translate: var(--px) var(--py);
+    transition: translate 0.15s linear;
+  }
+  .mouth {
+    fill: none;
+    stroke: color-mix(in oklch, var(--accent) 45%, black);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .mouth {
+    opacity: 0;
+    transition: opacity 0.2s var(--ease-out);
+  }
+  .critter:hover .mouth,
+  .critter.boop .mouth {
+    opacity: 1;
+  }
+
+  /* Ears twitch now and then, and perk up on hover */
+  .ear {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transition: rotate 0.3s var(--ease-out);
+  }
+  .ear-l {
+    animation: twitch 7s ease-in-out infinite;
+  }
+  .ear-r {
+    animation: twitch 7s ease-in-out 3.4s infinite;
+  }
+  .critter:hover .ear-l {
+    rotate: -8deg;
+  }
+  .critter:hover .ear-r {
+    rotate: 8deg;
+  }
+
+  /* Paws step alternately while crawling */
+  .paw {
+    transform-box: fill-box;
+  }
+  .walking .paw-l {
+    animation: step 0.36s ease-in-out infinite;
+  }
+  .walking .paw-r {
+    animation: step 0.36s ease-in-out 0.18s infinite;
+  }
+  .walking .art {
+    animation: bob 0.36s ease-in-out infinite;
+  }
+
+  .critter.boop .art {
+    animation: boop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes blink {
+    0%,
+    93%,
+    100% {
+      scale: 1 1;
+    }
+    96% {
+      scale: 1 0.12;
+    }
+  }
+  @keyframes twitch {
+    0%,
+    88%,
+    100% {
+      rotate: 0deg;
+    }
+    91% {
+      rotate: -10deg;
+    }
+    94% {
+      rotate: 4deg;
+    }
+  }
+  @keyframes step {
+    50% {
+      translate: 0 -4px;
+    }
+  }
+  @keyframes bob {
+    50% {
+      rotate: 2deg;
+    }
+  }
+  @keyframes boop {
+    40% {
+      scale: 1.1 0.9;
+    }
+    70% {
+      scale: 0.96 1.05;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .critter {
+      --size: 50px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .anchor {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const anchor = document.querySelector<HTMLElement>('[data-critter-anchor]');
+  const walker = document.querySelector<HTMLElement>('[data-critter-walker]');
+  const critter = document.querySelector<HTMLElement>('[data-critter]');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (anchor && walker && critter && !reduce) {
+    const quips = [
+      "Hi. I'm the unpaid intern.",
+      "I've read the resume. Twice. Strong hire.",
+      'Not a feature request. Just saying hi.',
+      'Psst: the stickers up top are draggable.',
+      "Kalash calls me scope creep. I'm staying.",
+      'The email button copies itself. Very efficient.',
+      'Fun fact: kalash-jain.com/anything has a 404 page.',
+    ];
+    type Edge = 'left' | 'right' | 'bottom';
+    let q = 0;
+    let rot = 0;
+    let hideTimer = 0;
+    let walkTimer = 0;
+    let hovering = false;
+    let stay = false;
+    let lastEdge = '';
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    // A fresh spot on the left, right or bottom edge (never the top: that's the nav)
+    function place(edge?: Edge) {
+      const edges = (['left', 'right', 'bottom'] as const).filter((e) => e !== lastEdge);
+      const e = edge ?? edges[Math.floor(Math.random() * edges.length)];
+      lastEdge = e;
+      if (e === 'bottom') {
+        const x = stay ? 90 : Math.random() < 0.5 ? rand(12, 30) : rand(70, 86);
+        anchor!.style.left = `${x}%`;
+        anchor!.style.top = '100%';
+        rot = 0;
+      } else {
+        anchor!.style.left = e === 'left' ? '0%' : '100%';
+        anchor!.style.top = `${rand(30, 70)}%`;
+        rot = e === 'left' ? 90 : -90;
+      }
+      anchor!.style.setProperty('--rot', `${rot}deg`);
+      walker!.classList.remove('walking');
+      walker!.style.setProperty('--walk', '0px');
+    }
+
+    // Crawl a few steps along the edge, toward the middle of that edge
+    function crawl() {
+      if (stay) return;
+      const r = critter!.getBoundingClientRect();
+      const along = rot === 0 ? r.left / innerWidth : r.top / innerHeight;
+      // in the rotated frame, +x runs right (bottom), down (left edge) or up (right edge)
+      let dir = along < 0.5 ? 1 : -1;
+      if (rot === -90) dir = -dir;
+      walker!.classList.add('walking');
+      walker!.style.setProperty('--walk', `${dir * rand(70, 130)}px`);
+      clearTimeout(walkTimer);
+      walkTimer = window.setTimeout(() => walker!.classList.remove('walking'), 2200);
+    }
+
+    function peek(ms: number, edge?: Edge) {
+      clearTimeout(hideTimer);
+      const show = () => {
+        place(edge);
+        void critter!.offsetWidth; // settle the new spot before it climbs up
+        critter!.classList.add('peek');
+        setTimeout(crawl, 650);
+        if (ms > 0)
+          hideTimer = window.setTimeout(() => {
+            if (!hovering) hide();
+          }, ms);
+      };
+      if (critter!.classList.contains('peek')) {
+        critter!.classList.remove('peek');
+        setTimeout(show, 600);
+      } else show();
+    }
+    const hide = () => {
+      stay = false;
+      critter!.classList.remove('peek');
+    };
+
+    // Peek once per section as it arrives; settle in at Contact
+    const seen = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting || seen.has(e.target.id)) continue;
+          seen.add(e.target.id);
+          if (e.target.id === 'contact') {
+            stay = true;
+            peek(0, 'bottom');
+          } else peek(3400);
+        }
+      },
+      { rootMargin: '0px 0px -55% 0px' },
+    );
+    ['experience', 'education', 'projects', 'about', 'contact'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+    const top = document.getElementById('top');
+    if (top) {
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) {
+          hide();
+          seen.delete('contact');
+        }
+      }).observe(top);
+    }
+
+    critter.addEventListener('pointerenter', () => {
+      hovering = true;
+      clearTimeout(hideTimer);
+    });
+    critter.addEventListener('pointerleave', () => {
+      hovering = false;
+      if (!stay) hideTimer = window.setTimeout(hide, 1400);
+    });
+    critter.addEventListener('click', () => {
+      if (!critter.classList.contains('peek')) return;
+      critter.classList.remove('boop');
+      void critter.offsetWidth; // restart the squish
+      critter.classList.add('boop');
+      dispatchEvent(new CustomEvent('toast', { detail: quips[q++ % quips.length] }));
+    });
+
+    // Eyes follow the cursor (converted into the critter's rotated frame)
+    let raf = 0;
+    addEventListener(
+      'pointermove',
+      (e) => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const r = critter.getBoundingClientRect();
+          const dx = e.clientX - (r.left + r.width / 2);
+          const dy = e.clientY - (r.top + r.height / 2);
+          const t = (rot * Math.PI) / 180;
+          const lx = dx * Math.cos(t) + dy * Math.sin(t);
+          const ly = -dx * Math.sin(t) + dy * Math.cos(t);
+          const len = Math.hypot(lx, ly) || 1;
+          critter.style.setProperty('--px', `${(lx / len) * 1.8}px`);
+          critter.style.setProperty('--py', `${(ly / len) * 3.2}px`);
+        });
+      },
+      { passive: true },
+    );
+  }
+</script>

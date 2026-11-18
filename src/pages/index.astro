@@ -6,7 +6,7 @@ import Timeline from '../components/Timeline.astro';
 import Projects from '../components/Projects.astro';
 import About from '../components/About.astro';
 import Contact from '../components/Contact.astro';
-import Blob from '../components/Blob.astro';
+import Critter from '../components/Critter.astro';
 import { experience, education } from '../data/site';
 ---
 
@@ -44,7 +44,7 @@ import { experience, education } from '../data/site';
     <a class="mono top-link" href="#top">Back to top ↑</a>
   </footer>
 
-  <Blob />
+  <Critter />
 </Base>
 
 <style>
@@ -52,19 +52,27 @@ import { experience, education } from '../data/site';
     position: fixed;
     width: min(90vw, 900px);
     aspect-ratio: 1;
-    left: 62%;
-    top: 40%;
+    left: 50%;
+    top: 45%;
     translate: -50% -50%;
     background: radial-gradient(closest-side, var(--glow), transparent 70%);
     will-change: translate, scale;
     pointer-events: none;
     z-index: -1;
-    animation: drift 18s ease-in-out infinite alternate;
+    animation: drift 28s ease-in-out infinite;
   }
   @keyframes drift {
-    to {
-      translate: -70% -45%;
-      scale: 1.15;
+    25% {
+      translate: -42% -54%;
+      scale: 1.08;
+    }
+    50% {
+      translate: -50% -58%;
+      scale: 1.14;
+    }
+    75% {
+      translate: -58% -54%;
+      scale: 1.08;
     }
   }
 

@@ -113,5 +113,28 @@ export const projects = [
 // Draggable stickers next to the hero photo (decorative; the same facts are in the text)
 export const stickers = ['ex-JPMorgan Chase', "UCLA Anderson MBA '28", 'published poet ✎', 'builds with AI'];
 
-// Off-the-clock marquee
-export const offClock = ['Published poet', 'Musician', 'Building apps with AI'];
+// Toolkit ticker, straight from the resume's Additional section
+export const skills = {
+  product: [
+    'Agile / Scrum',
+    'Requirements Gathering',
+    'Stakeholder Management',
+    'AI Evals',
+    'Agentic AI',
+    'Jira',
+    'Claude Code',
+  ],
+  technical: [
+    'Python',
+    'JavaScript / TypeScript',
+    'SQL',
+    'React / Next.js',
+    'AWS',
+    'Kafka',
+    'Git',
+    'Postman',
+    'Confluence',
+    'Notion',
+    'LLM APIs',
+  ],
+};
