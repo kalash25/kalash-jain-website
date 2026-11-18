@@ -1,0 +1,126 @@
+/* ------------------------------------------------------------------
+   Design tokens
+   Palette: near-black ink, paper white, and one blue-leaning violet
+   (OKLCH hue ~285) so purple never drifts toward pink.
+   Dark is the default; [data-theme="light"] switches it.
+------------------------------------------------------------------- */
+:root {
+  --hue: 285;
+
+  --bg: oklch(0.145 0.012 var(--hue));
+  --surface: oklch(0.19 0.016 var(--hue));
+  --ink: oklch(0.97 0.006 var(--hue));
+  --muted: oklch(0.72 0.022 var(--hue));
+  --line: oklch(0.32 0.024 var(--hue));
+  --accent: oklch(0.72 0.16 var(--hue));
+  --accent-ink: oklch(0.16 0.03 var(--hue));
+  --glow: oklch(0.52 0.24 var(--hue) / 0.38);
+  --grain-opacity: 0.07;
+
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --gutter: clamp(16px, 4vw, 48px);
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: oklch(0.985 0.004 var(--hue));
+  --surface: oklch(0.955 0.01 var(--hue));
+  --ink: oklch(0.17 0.016 var(--hue));
+  --muted: oklch(0.45 0.022 var(--hue));
+  --line: oklch(0.86 0.016 var(--hue));
+  --accent: oklch(0.5 0.22 var(--hue));
+  --accent-ink: oklch(0.985 0.004 var(--hue));
+  --glow: oklch(0.7 0.16 var(--hue) / 0.28);
+  --grain-opacity: 0.045;
+
+  color-scheme: light;
+}
+
+/* ------------------------------------------------------------------
+   Base
+------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.4s var(--ease-out),
+    color 0.4s var(--ease-out);
+}
+
+/* Film grain over everything, never blocks clicks */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kalash-jain-website",
+  "compatibility_date": "2026-11-01",
+  // Pure static site for now: no Worker script, just the built files.
+  // To add API endpoints later (newsletter, AI demos), add a "main" entry here.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "kalash-jain.com", "custom_domain": true },
+    { "pattern": "www.kalash-jain.com", "custom_domain": true }
+  ]
+}

@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Not found · Kalash Jain">
+  <main class="nf">
+    <p class="mono">Error 404 / Track not found</p>
+    <h1>This one's not on the album.</h1>
+    <a href="/">Back to the start →</a>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    min-height: 100svh;
+    display: grid;
+    place-content: center;
+    gap: 16px;
+    padding: 0 var(--gutter);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 7vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  a {
+    color: var(--accent);
+    text-underline-offset: 4px;
+  }
+</style>
