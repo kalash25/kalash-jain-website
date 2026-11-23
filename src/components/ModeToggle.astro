@@ -1,0 +1,75 @@
+---
+interface Props {
+  inMenu?: boolean;
+}
+const { inMenu = false } = Astro.props;
+---
+
+<!-- Explore (the board) ↔ Skim (one simple scroll). Shows the mode you'd switch to. -->
+<button class:list={['mode-toggle', { 'in-menu': inMenu }]} type="button" data-mode-toggle>
+  <svg class="i skim-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"></path></svg>
+  <svg class="i roam-i" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="5.5" width="7" height="5" rx="1.5"></rect><rect x="5.5" y="13.5" width="5" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect>
+  </svg>
+  <span class="label skim-l">Skim mode</span>
+  <span class="label roam-l">Explore mode</span>
+</button>
+
+<style>
+  .mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px 0 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: 500 0.82rem/1 var(--font-body);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      border-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+  .mode-toggle:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .i {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  /* on the board, offer Skim; in Skim, offer the board */
+  .roam-i,
+  .roam-l {
+    display: none;
+  }
+  :global(html:not(.roam)) .skim-i,
+  :global(html:not(.roam)) .skim-l {
+    display: none;
+  }
+  :global(html:not(.roam)) .roam-i,
+  :global(html:not(.roam)) .roam-l {
+    display: inline;
+  }
+  @media (max-width: 1220px) {
+    .mode-toggle:not(.in-menu) .label {
+      display: none !important;
+    }
+    .mode-toggle:not(.in-menu) {
+      width: 40px;
+      padding: 0;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/mode';
+</script>

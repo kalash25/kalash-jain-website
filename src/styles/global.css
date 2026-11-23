@@ -211,3 +211,191 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   Roam mode: the page as a board (src/scripts/roam.ts).
+   Only active once the script has laid the board out (.roam-ready),
+   so if JS fails the page is simply the normal scroll.
+------------------------------------------------------------------- */
+html.roam-ready,
+html.roam-ready body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+html.roam-ready [data-stage] {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  background-image: radial-gradient(color-mix(in oklch, var(--muted) 28%, transparent) 1px, transparent 1.4px);
+  background-size: var(--grid, 28px) var(--grid, 28px);
+  background-position: var(--gx, 0) var(--gy, 0);
+}
+html.roam-ready [data-stage].panning {
+  cursor: grabbing;
+}
+html.roam-ready [data-stage].panning * {
+  user-select: none;
+}
+html.roam-ready [data-world] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+/* each section becomes an island */
+html.roam-ready [data-world] > section,
+html.roam-ready [data-world] > footer {
+  position: absolute;
+  margin: 0;
+  max-width: none;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--bg);
+  box-shadow: 0 40px 90px -50px rgb(0 0 0 / 0.65);
+}
+html.roam-ready [data-world] > #top {
+  border-color: color-mix(in oklch, var(--accent) 45%, var(--line));
+  overflow: clip;
+}
+html.roam-ready [data-world] > #contact {
+  border-color: transparent;
+}
+/* labels above islands, readable once you zoom out */
+.roam-labels span {
+  position: absolute;
+  font: 650 120px/1 var(--font-display);
+  letter-spacing: -0.05em;
+  color: color-mix(in oklch, var(--accent) 75%, transparent);
+  opacity: var(--label-o, 0);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.roam-threads {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.roam-threads path {
+  fill: none;
+  stroke: color-mix(in oklch, var(--accent) 40%, transparent);
+  stroke-width: 2.5;
+  stroke-dasharray: 2 12;
+  stroke-linecap: round;
+}
+
+/* board controls */
+.roam-ui {
+  display: none;
+}
+html.roam-ready .roam-ui {
+  display: block;
+}
+.roam-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  z-index: 40;
+  margin: 0;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  translate: -50% 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.5s var(--ease-out),
+    translate 0.5s var(--ease-out);
+}
+.roam-hint.show {
+  opacity: 1;
+  translate: -50% 0;
+}
+.roam-hint.gone {
+  opacity: 0;
+  translate: -50% 12px;
+}
+.minimap {
+  position: fixed;
+  right: 18px;
+  bottom: 80px;
+  z-index: 40;
+  width: 170px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+}
+.minimap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+.minimap .mm-island {
+  fill: color-mix(in oklch, var(--muted) 25%, transparent);
+  transition: fill 0.3s var(--ease-out);
+}
+.minimap .mm-island.on {
+  fill: color-mix(in oklch, var(--accent) 60%, transparent);
+}
+.minimap .mm-view {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 36;
+}
+html.roam-ready .zoom {
+  position: fixed;
+  right: 18px;
+  bottom: 28px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+}
+.zoom button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.zoom button:hover {
+  background: var(--surface);
+}
+.zoom span {
+  min-width: 3.2em;
+  font-size: 0.64rem;
+  text-align: center;
+}
+@media (max-width: 760px) {
+  .minimap {
+    display: none;
+  }
+  .roam-hint {
+    bottom: 84px;
+  }
+  html.roam-ready .zoom {
+    bottom: 84px;
+  }
+}

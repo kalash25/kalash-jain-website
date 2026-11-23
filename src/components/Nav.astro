@@ -2,6 +2,7 @@
 import ThemeToggle from './ThemeToggle.astro';
 import DirectorsCut from './DirectorsCut.astro';
 import SoundToggle from './SoundToggle.astro';
+import ModeToggle from './ModeToggle.astro';
 
 // Numbered jump links to each section
 import { links as site } from '../data/site';
@@ -37,6 +38,7 @@ const links = [
             </li>
           ))
         }
+        <li class="menu-mode"><ModeToggle inMenu /></li>
       </ul>
     </nav>
 
@@ -44,6 +46,7 @@ const links = [
       <a class="btn btn-small" href={site.resume} download>
         Resume <span aria-hidden="true">↓</span>
       </a>
+      <ModeToggle />
       <DirectorsCut />
       <SoundToggle />
       <ThemeToggle />
@@ -198,9 +201,20 @@ const links = [
   }
 
   /* phones: five controls in the bar, so everything gets a little more compact */
+  .menu-mode {
+    display: none;
+  }
   @media (max-width: 560px) {
     .actions {
       gap: 6px;
+    }
+    /* phones: the mode switch lives in the menu to keep the bar short */
+    .actions > :global(.mode-toggle) {
+      display: none;
+    }
+    .menu-mode {
+      display: block;
+      padding: 10px 0 0;
     }
     .actions :global(.sound-toggle),
     .actions :global(.theme-toggle),
@@ -213,10 +227,19 @@ const links = [
     }
   }
 
-  /* six links and four controls: tighten up on smaller laptops before switching to the menu */
-  @media (max-width: 1220px) {
-    .brand span,
+  .brand,
+  .actions > :global(*) {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  /* six links and five controls: drop the numbers first, then tighten before the menu */
+  @media (max-width: 1500px) {
     .n {
+      display: none;
+    }
+  }
+  @media (max-width: 1220px) {
+    .brand span {
       display: none;
     }
     .links a {
@@ -281,9 +304,22 @@ const links = [
   links.forEach((a) => a.addEventListener('click', () => setOpen(false)));
   addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
 
+  const roaming = () => document.documentElement.classList.contains('roam-ready');
+
+  /* On the board: highlight where the camera is, and fill the scrubber as you explore */
+  addEventListener('roam:current', (e) => {
+    const id = (e as CustomEvent<{ id: string }>).detail.id;
+    links.forEach((a) => a.removeAttribute('aria-current'));
+    links.find((a) => a.hash === `#${id}`)?.setAttribute('aria-current', 'true');
+  });
+  addEventListener('roam:explored', (e) =>
+    nav.style.setProperty('--progress', String((e as CustomEvent<{ fraction: number }>).detail.fraction)),
+  );
+
   /* Scroll progress scrubber */
   let ticking = false;
   const update = () => {
+    if (roaming()) return void (ticking = false);
     const max = document.documentElement.scrollHeight - innerHeight;
     nav.style.setProperty('--progress', String(max > 0 ? scrollY / max : 0));
     ticking = false;
@@ -302,6 +338,7 @@ const links = [
   const byId = new Map(links.map((a) => [a.hash.slice(1), a]));
   const io = new IntersectionObserver(
     (entries) => {
+      if (roaming()) return;
       for (const e of entries) {
         if (!e.isIntersecting) continue;
         links.forEach((a) => a.removeAttribute('aria-current'));
@@ -317,7 +354,7 @@ const links = [
   const top = document.getElementById('top');
   if (top) {
     new IntersectionObserver(
-      ([e]) => e.isIntersecting && links.forEach((a) => a.removeAttribute('aria-current')),
+      ([e]) => !roaming() && e.isIntersecting && links.forEach((a) => a.removeAttribute('aria-current')),
       { rootMargin: '-45% 0px -50% 0px' },
     ).observe(top);
   }

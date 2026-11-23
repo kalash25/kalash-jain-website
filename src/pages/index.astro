@@ -17,36 +17,53 @@ import { experience, education } from '../data/site';
   <div class="glow" aria-hidden="true"></div>
   <Nav />
 
-  <main>
-    <Hero />
-    <Story />
-    <Timeline
-      id="experience"
-      n="02"
-      label="Experience"
-      title="Where I've <em>worked.</em>"
-      entries={experience}
-    />
-    <Timeline
-      id="education"
-      n="03"
-      label="Education"
-      title="Where I've <em>studied.</em>"
-      entries={education}
-    />
-    <Projects />
-    <About />
-    <Contact />
+  <!-- One set of sections, two ways to see them: Roam (a board you drag around, roam.ts)
+       or Skim (the plain single scroll). Without JS it's always the scroll. -->
+  <main data-stage>
+    <div class="world" data-world>
+      <Hero />
+      <Story />
+      <Timeline
+        id="experience"
+        n="02"
+        label="Experience"
+        title="Where I've <em>worked.</em>"
+        entries={experience}
+      />
+      <Timeline
+        id="education"
+        n="03"
+        label="Education"
+        title="Where I've <em>studied.</em>"
+        entries={education}
+      />
+      <Projects />
+      <About />
+      <Contact />
+
+      <footer class="footer">
+        <div class="foot-left">
+          <span class="mono">© {new Date().getFullYear()}</span>
+          <span class="sign">Kalash Jain</span>
+          <span class="mono">Built in LA between coffee chats · <time data-clock>--:--</time></span>
+        </div>
+        <a class="mono top-link" href="#top">Back to top ↑</a>
+      </footer>
+    </div>
   </main>
 
-  <footer class="footer">
-    <div class="foot-left">
-      <span class="mono">© {new Date().getFullYear()}</span>
-      <span class="sign">Kalash Jain</span>
-      <span class="mono">Built in LA between coffee chats · <time data-clock>--:--</time></span>
+  <!-- board controls (Roam mode only) -->
+  <div class="roam-ui" aria-hidden="true">
+    <p class="roam-hint mono" data-roam-hint>Drag to explore · scroll · pinch to zoom</p>
+    <div class="minimap">
+      <svg data-minimap></svg>
     </div>
-    <a class="mono top-link" href="#top">Back to top ↑</a>
-  </footer>
+  </div>
+  <div class="roam-ui zoom" role="group" aria-label="Zoom">
+    <button type="button" data-zoom="-1" aria-label="Zoom out">−</button>
+    <span class="mono" data-zoom-label>100%</span>
+    <button type="button" data-zoom="1" aria-label="Zoom in">+</button>
+  </div>
 
   <Critter />
 </Base>
@@ -118,6 +135,7 @@ import { experience, education } from '../data/site';
 
 <script>
   import '../scripts/motion';
+  import '../scripts/roam';
 
   const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
   const fmt = new Intl.DateTimeFormat('en-US', {

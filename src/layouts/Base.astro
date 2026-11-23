@@ -79,6 +79,14 @@ const shareImage = new URL('/og-v2.jpg', Astro.site);
         addEventListener('DOMContentLoaded', function () {
           if (root.dataset.boot !== 'gate') arm();
         });
+        // Explore (the board) or Skim (one scroll): remembered; phones default to Skim
+        try {
+          var m = localStorage.getItem('mode');
+          if (m !== 'roam' && m !== 'skim') m = innerWidth < 700 ? 'skim' : 'roam';
+          root.classList.add(m);
+        } catch (e) {
+          root.classList.add('roam');
+        }
         try {
           if (sessionStorage.getItem('dc') === '1') root.classList.add('dc');
           var t = localStorage.getItem('theme');

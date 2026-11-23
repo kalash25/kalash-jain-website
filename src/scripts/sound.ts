@@ -274,3 +274,81 @@ export function drone({ gain = 0.12 } = {}) {
     os.forEach((o) => o.stop(s + fade + 0.05));
   };
 }
+
+/** A soft landing: a low, short thump when the camera arrives somewhere */
+export function land({ gain = 0.16 } = {}) {
+  const g = graph();
+  if (!g || !isOn()) return;
+  const { ac, out, verb } = g;
+  const t = ac.currentTime;
+  const o = ac.createOscillator();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(190, t);
+  o.frequency.exponentialRampToValueAtTime(70, t + 0.22);
+  const e = ac.createGain();
+  e.gain.setValueAtTime(0.0001, t);
+  e.gain.exponentialRampToValueAtTime(gain, t + 0.008);
+  e.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+  o.connect(e);
+  e.connect(out);
+  e.connect(verb);
+  o.start(t);
+  o.stop(t + 0.4);
+}
+
+// A pentatonic scale, so notes played while exploring always sound like they belong together
+const SCALE = [392, 440, 523.25, 587.33, 659.25, 783.99, 880];
+
+/** A soft plucked note; i picks a step of the scale */
+export function note(i = 0, { gain = 0.07 } = {}) {
+  const g = graph();
+  if (!g || !isOn()) return;
+  const { ac, out, verb } = g;
+  const t = ac.currentTime;
+  const f = SCALE[((i % SCALE.length) + SCALE.length) % SCALE.length];
+  const e = ac.createGain();
+  e.gain.setValueAtTime(0.0001, t);
+  e.gain.exponentialRampToValueAtTime(gain, t + 0.006);
+  e.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+  [1, 2.01].forEach((m, k) => {
+    const o = ac.createOscillator();
+    o.type = k ? 'sine' : 'triangle';
+    o.frequency.value = f * m;
+    const og = ac.createGain();
+    og.gain.value = k ? 0.25 : 1;
+    o.connect(og).connect(e);
+    o.start(t);
+    o.stop(t + 1);
+  });
+  e.connect(out);
+  e.connect(verb);
+}
+
+/** Air you hear while dragging the board; set(0–1) follows the drag speed */
+export function wind() {
+  const g = graph();
+  if (!g || !isOn()) return { set: (_: number) => {}, stop: () => {} };
+  const { ac, out } = g;
+  const src = noise(ac);
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = 0.8;
+  bp.frequency.value = 500;
+  const e = ac.createGain();
+  e.gain.value = 0.0001;
+  src.connect(bp).connect(e).connect(out);
+  src.start(ac.currentTime, Math.random());
+  return {
+    set: (v: number) => {
+      const t = ac.currentTime;
+      const k = Math.min(1, Math.max(0, v));
+      e.gain.setTargetAtTime(0.0001 + k * 0.09, t, 0.06);
+      bp.frequency.setTargetAtTime(400 + k * 1400, t, 0.08);
+    },
+    stop: () => {
+      const t = ac.currentTime;
+      e.gain.setTargetAtTime(0.0001, t, 0.12);
+      src.stop(t + 0.6);
+    },
+  };
+}

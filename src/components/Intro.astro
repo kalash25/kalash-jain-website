@@ -356,8 +356,7 @@ for (let i = 0; i <= 120; i++) {
       if (lifted) return;
       lifted = true;
       cancelAnimationFrame(raf);
-      stopDrone(0.3);
-      sfx.whoosh({ dur: 0.9, from: 140, to: 1100, gain: 0.32 });
+      stopDrone(0.3); // no sound of its own: the hit's tail carries the reveal
       boot.classList.add('lift');
       setTimeout(finish, 820);
     };

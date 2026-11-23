@@ -14,6 +14,44 @@ import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const root = document.documentElement;
+const roaming = () => root.classList.contains('roam');
+
+/* Scroll-driven animations only make sense in Skim mode (the single scroll). In Roam mode
+   (the board) nothing scrolls, so they're parked at their finished state instead. */
+const reveals: gsap.core.Animation[] = []; // play once on scroll: finish them for good in Roam
+const scrubbed: gsap.core.Animation[] = []; // follow the scroll: parked in Roam, resumed in Skim
+const startParked: gsap.core.Animation[] = []; // parked at their start instead (the hero drift)
+const triggers: ScrollTrigger[] = []; // plain triggers (timeline dots)
+let lenisRef: Lenis | null = null;
+
+function park() {
+  for (const a of reveals) {
+    a.scrollTrigger?.kill();
+    a.progress(1);
+  }
+  for (const a of [...scrubbed, ...startParked]) {
+    a.scrollTrigger?.disable(false);
+    a.progress(startParked.includes(a) ? 0 : 1);
+  }
+  triggers.forEach((t) => t.disable(false));
+  document.querySelectorAll('[data-timeline-dot]').forEach((d) => d.classList.add('lit'));
+}
+function resume() {
+  for (const a of [...scrubbed, ...startParked]) a.scrollTrigger?.enable();
+  triggers.forEach((t) => t.enable());
+  ScrollTrigger.refresh();
+}
+addEventListener('mode:change', (e) => {
+  const { mode } = (e as CustomEvent<{ mode: string }>).detail;
+  if (mode === 'roam') {
+    lenisRef?.stop();
+    if (!reduce) park();
+  } else {
+    lenisRef?.start();
+    if (!reduce) resume();
+  }
+});
 
 // Wait for the hero intro (or 3s at most) plus a beat, so setup work never stutters it
 const afterIntro = new Promise<void>((resolve) => {
@@ -36,6 +74,8 @@ if (!reduce) {
     lerp: 0.12,
     anchors: { offset: -72 },
   });
+  lenisRef = lenis;
+  if (roaming()) lenis.stop();
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -44,7 +84,7 @@ if (!reduce) {
     /* Fade-up blocks */
     document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
       const stagger = el.dataset.reveal === 'stagger';
-      gsap.from(stagger ? el.children : el, {
+      const tw = gsap.from(stagger ? el.children : el, {
         y: 28,
         opacity: 0,
         duration: 0.9,
@@ -52,6 +92,7 @@ if (!reduce) {
         stagger: stagger ? 0.08 : 0,
         scrollTrigger: { trigger: el, start: 'top 85%', once: true },
       });
+      reveals.push(tw);
     });
 
     /* Scene 1: as you leave the hero, the photo drifts up slower than the page and the copy
@@ -59,15 +100,17 @@ if (!reduce) {
     const hero = document.querySelector<HTMLElement>('[data-hero]');
     if (hero) {
       const leave = { trigger: hero, start: 'top top', end: 'bottom top', scrub: true };
-      gsap.to(hero.querySelector('.media'), { yPercent: 12, scale: 1.04, ease: 'none', scrollTrigger: leave });
-      gsap.to(hero.querySelector('.copy'), { yPercent: -6, opacity: 0.4, ease: 'none', scrollTrigger: leave });
+      startParked.push(
+        gsap.to(hero.querySelector('.media'), { yPercent: 12, scale: 1.04, ease: 'none', scrollTrigger: leave }),
+        gsap.to(hero.querySelector('.copy'), { yPercent: -6, opacity: 0.4, ease: 'none', scrollTrigger: leave }),
+      );
     }
 
     /* Scene 2: project cards are dealt onto the table from a stacked deck */
     const deck = document.querySelector<HTMLElement>('[data-deck]');
     if (deck) {
       const spread = Math.min(140, innerWidth * 0.18);
-      gsap.from(deck.querySelectorAll('[data-card]'), {
+      const dealt = gsap.from(deck.querySelectorAll('[data-card]'), {
         x: (i: number) => (i % 2 ? -spread : spread),
         y: 140,
         rotation: (i: number) => (i % 2 ? 8 : -8),
@@ -77,13 +120,14 @@ if (!reduce) {
         ease: 'power2.out',
         scrollTrigger: { trigger: deck, start: 'top 88%', end: 'top 45%', scrub: 0.8 },
       });
+      scrubbed.push(dealt);
     }
 
     /* Experience timeline: the line draws itself as you scroll past it */
     document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((tl) => {
       const fill = tl.querySelector('[data-timeline-fill]');
       if (!fill) return;
-      gsap.fromTo(
+      const drawn = gsap.fromTo(
         fill,
         { scaleY: 0 },
         {
@@ -92,15 +136,19 @@ if (!reduce) {
           scrollTrigger: { trigger: tl, start: 'top 70%', end: 'bottom 60%', scrub: 0.6 },
         },
       );
+      scrubbed.push(drawn);
       tl.querySelectorAll('[data-timeline-dot]').forEach((dot) => {
-        ScrollTrigger.create({
+        const st = ScrollTrigger.create({
           trigger: dot,
           start: 'top 65%',
           onEnter: () => dot.classList.add('lit'),
           onLeaveBack: () => dot.classList.remove('lit'),
         });
+        triggers.push(st);
       });
     });
+
+    if (roaming()) park();
 
     /* Headings: split into lines once fonts are ready so line breaks are real */
     document.fonts.ready.then(() => {
@@ -109,17 +157,25 @@ if (!reduce) {
           type: 'lines',
           mask: 'lines',
           autoSplit: true,
-          onSplit: (self) =>
-            gsap.from(self.lines, {
+          onSplit: (self) => {
+            const tw = gsap.from(self.lines, {
               yPercent: 110,
               duration: 1,
               ease: 'power4.out',
               stagger: 0.09,
               scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-            }),
+            });
+            reveals.push(tw);
+            if (roaming()) {
+              tw.scrollTrigger?.kill();
+              tw.progress(1);
+            }
+            return tw;
+          },
         });
       });
       ScrollTrigger.refresh();
+      if (roaming()) park();
     });
   });
 }
