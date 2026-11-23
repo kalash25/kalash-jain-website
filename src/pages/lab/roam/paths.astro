@@ -1,0 +1,480 @@
+---
+// Demo B: choose your own path. Pick a question, get a scene; every scene ends with doors to the rest.
+import { Image } from 'astro:assets';
+import Base from '../../../layouts/Base.astro';
+import LabBar from '../../../components/lab/LabBar.astro';
+import Story from '../../../components/Story.astro';
+import Timeline from '../../../components/Timeline.astro';
+import Projects from '../../../components/Projects.astro';
+import About from '../../../components/About.astro';
+import Contact from '../../../components/Contact.astro';
+import portrait from '../../../assets/portrait-dark.webp';
+import { experience, education } from '../../../data/site';
+
+const doors = [
+  { id: 'story', ask: 'Where are you from?', sub: 'US → India → LA, on a map', glyph: '✈' },
+  { id: 'experience', ask: 'What have you actually done?', sub: 'Three years at JPMorgan Chase', glyph: '▤' },
+  { id: 'projects', ask: 'What have you built?', sub: 'Two AI tools I use every day', glyph: '⌘' },
+  { id: 'education', ask: 'Where did you study?', sub: 'UCLA Anderson, PEC', glyph: '✎' },
+  { id: 'about', ask: 'Who are you, really?', sub: 'The why behind the switch', glyph: '◐' },
+  { id: 'contact', ask: 'Can I just get your resume?', sub: 'Yes. And my email.', glyph: '↓' },
+];
+const name: Record<string, string> = {
+  story: 'Story',
+  experience: 'Experience',
+  projects: 'Projects',
+  education: 'Education',
+  about: 'About',
+  contact: 'Contact',
+};
+---
+
+<Base title="B · Paths · Kalash Jain">
+  <LabBar current="paths" />
+
+  <nav class="trail" aria-label="Where you've been" data-trail>
+    <button type="button" data-go="start" class="crumb on">Start</button>
+  </nav>
+
+  <!-- the start: a set of doors -->
+  <main class="start" data-start>
+    <div class="who">
+      <Image src={portrait} width={240} alt="Kalash Jain" class="face" />
+      <div>
+        <p class="mono">UCLA Anderson MBA '28 · ex-JPMorgan Chase</p>
+        <h1>Hi, I'm Kalash.<br /><span>Where do you want to start?</span></h1>
+      </div>
+    </div>
+    <ul class="doors">
+      {
+        doors.map((d, i) => (
+          <li>
+            <button type="button" class="door" data-go={d.id} style={`--i:${i}`}>
+              <span class="glyph" aria-hidden="true">{d.glyph}</span>
+              <span class="ask">{d.ask}</span>
+              <span class="sub">{d.sub}</span>
+              <span class="seen-tag mono">seen ✓</span>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mono foot">Every answer is a short scene. You can't get lost: the trail at the top remembers.</p>
+  </main>
+
+  <!-- the scenes -->
+  {
+    doors.map((d) => (
+      <section class="scene" data-scene={d.id} aria-label={name[d.id]} hidden>
+        <div class="scene-top">
+          <button type="button" class="back" data-go="start">← Start</button>
+          <p class="mono">{d.ask}</p>
+        </div>
+        <div class="scene-body">
+          {d.id === 'story' && <Story drive="manual" n="01" />}
+          {d.id === 'experience' && (
+            <Timeline id="experience" n="02" label="Experience" title="Where I've <em>worked.</em>" entries={experience} />
+          )}
+          {d.id === 'projects' && <Projects />}
+          {d.id === 'education' && (
+            <Timeline id="education" n="03" label="Education" title="Where I've <em>studied.</em>" entries={education} />
+          )}
+          {d.id === 'about' && <About />}
+          {d.id === 'contact' && <Contact />}
+        </div>
+        <div class="next">
+          <p class="next-h">Where next?</p>
+          <div class="next-doors" data-next-doors />
+        </div>
+      </section>
+    ))
+  }
+
+  <template data-door-tpl>
+    <button type="button" class="mini-door"><span class="glyph"></span><span class="ask"></span></button>
+  </template>
+  <script is:inline define:vars={{ doors }}>
+    window.__doors = doors;
+  </script>
+</Base>
+
+<style>
+  :global(body) {
+    overflow: hidden;
+  }
+  .trail {
+    position: fixed;
+    top: 72px;
+    left: clamp(12px, 3vw, 28px);
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    max-width: calc(100vw - 24px);
+  }
+  .trail :global(.crumb) {
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--bg) 85%, transparent);
+    color: var(--muted);
+    font: 500 0.72rem/1 var(--font-mono);
+    cursor: pointer;
+  }
+  .trail :global(.crumb.on) {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .trail :global(.sep) {
+    color: var(--muted);
+    font-size: 0.7rem;
+  }
+
+  .start {
+    position: fixed;
+    inset: 60px 0 0;
+    overflow-y: auto;
+    padding: clamp(70px, 9vh, 110px) clamp(16px, 5vw, 72px) 40px;
+    display: grid;
+    align-content: center;
+    gap: clamp(24px, 4vh, 44px);
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  .who {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 3vw, 32px);
+  }
+  .face {
+    width: clamp(84px, 12vw, 132px);
+    height: auto;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: 50% 25%;
+    border: 2px solid var(--accent);
+  }
+  h1 {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: clamp(2rem, 5vw, 4rem);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+  h1 span {
+    color: var(--accent);
+  }
+  .doors {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .door {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    padding: 22px 22px 24px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    animation: door-in 0.7s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 60ms);
+    transition: border-color 0.25s var(--ease-out), translate 0.3s var(--ease-out);
+  }
+  @keyframes door-in {
+    from {
+      opacity: 0;
+      translate: 0 16px;
+    }
+  }
+  .door::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    clip-path: circle(0 at var(--mx, 50%) var(--my, 50%));
+    transition: clip-path 0.5s var(--ease-out);
+    z-index: 0;
+  }
+  .door:hover {
+    translate: 0 -3px;
+    border-color: var(--accent);
+  }
+  .door:hover::before {
+    clip-path: circle(160% at var(--mx, 50%) var(--my, 50%));
+  }
+  .door > * {
+    position: relative;
+    z-index: 1;
+    transition: color 0.3s var(--ease-out);
+  }
+  .door:hover > * {
+    color: var(--accent-ink);
+  }
+  .glyph {
+    font-size: 1.4rem;
+    color: var(--accent);
+  }
+  .ask {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .seen-tag {
+    position: absolute !important;
+    top: 18px;
+    right: 18px;
+    font-size: 0.6rem;
+    opacity: 0;
+  }
+  .door.seen .seen-tag {
+    opacity: 1;
+  }
+  .door.seen {
+    border-style: dashed;
+  }
+  .foot {
+    font-size: 0.64rem;
+  }
+
+  .scene {
+    position: fixed;
+    inset: 60px 0 0;
+    z-index: 30;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--bg);
+    clip-path: circle(0 at var(--ox, 50%) var(--oy, 50%));
+    transition: clip-path 0.75s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .scene.open {
+    clip-path: circle(150% at var(--ox, 50%) var(--oy, 50%));
+  }
+  .scene-top {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 50px clamp(16px, 4vw, 48px) 12px;
+    background: linear-gradient(var(--bg) 70%, transparent);
+  }
+  .scene-top .mono {
+    margin: 0;
+  }
+  .back {
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 500 0.85rem/1 var(--font-body);
+    cursor: pointer;
+  }
+  .back:hover {
+    border-color: var(--accent);
+  }
+  .scene-body :global(section) {
+    border-top: 0 !important;
+    padding-top: 30px !important;
+  }
+  .next {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 20px var(--gutter) 90px;
+    border-top: 1px solid var(--line);
+  }
+  .next-h {
+    margin: 30px 0 18px;
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    letter-spacing: -0.04em;
+  }
+  .next-doors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .next-doors :global(.mini-door) {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    color: var(--ink);
+    font: 600 1rem/1.2 var(--font-display);
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease-out), translate 0.25s var(--ease-out);
+  }
+  .next-doors :global(.mini-door:hover) {
+    border-color: var(--accent);
+    translate: 0 -2px;
+  }
+  .next-doors :global(.mini-door .glyph) {
+    color: var(--accent);
+  }
+  .next-doors :global(.mini-door.seen) {
+    opacity: 0.55;
+  }
+
+  @media (max-width: 860px) {
+    .doors {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 520px) {
+    .doors {
+      grid-template-columns: 1fr;
+    }
+    .door {
+      padding: 16px 18px;
+    }
+    .start {
+      align-content: start;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scene {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { whoosh, soft } from '../../../scripts/sound';
+
+  type Door = { id: string; ask: string; sub: string; glyph: string };
+  const doors = (window as unknown as { __doors: Door[] }).__doors;
+  const label: Record<string, string> = Object.fromEntries(
+    [...document.querySelectorAll<HTMLElement>('[data-scene]')].map((s) => [s.dataset.scene!, s.getAttribute('aria-label')!]),
+  );
+  const trail = document.querySelector<HTMLElement>('[data-trail]')!;
+  const tpl = document.querySelector<HTMLTemplateElement>('[data-door-tpl]')!;
+  const seen = new Set<string>();
+  const path: string[] = [];
+  let current = 'start';
+
+  // door hover: the fill grows from where the cursor came in
+  document.querySelectorAll<HTMLElement>('.door').forEach((d) =>
+    d.addEventListener('pointerenter', (e) => {
+      const r = d.getBoundingClientRect();
+      d.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      d.style.setProperty('--my', `${e.clientY - r.top}px`);
+    }),
+  );
+
+  const renderTrail = () => {
+    trail.innerHTML = '';
+    const add = (id: string) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'crumb' + (id === current ? ' on' : '');
+      b.dataset.go = id;
+      b.textContent = id === 'start' ? 'Start' : label[id];
+      trail.append(b);
+    };
+    add('start');
+    path.forEach((id) => {
+      const s = document.createElement('span');
+      s.className = 'sep';
+      s.textContent = '→';
+      trail.append(s);
+      add(id);
+    });
+  };
+
+  const renderNext = (scene: HTMLElement, id: string) => {
+    const box = scene.querySelector<HTMLElement>('[data-next-doors]')!;
+    box.innerHTML = '';
+    // unseen first, then the ones you've been to
+    const rest = doors.filter((d) => d.id !== id).sort((a, b) => Number(seen.has(a.id)) - Number(seen.has(b.id)));
+    rest.forEach((d) => {
+      const n = tpl.content.firstElementChild!.cloneNode(true) as HTMLButtonElement;
+      n.dataset.go = d.id;
+      n.querySelector('.glyph')!.textContent = d.glyph;
+      n.querySelector('.ask')!.textContent = d.ask;
+      if (seen.has(d.id)) n.classList.add('seen');
+      box.append(n);
+    });
+    const back = tpl.content.firstElementChild!.cloneNode(true) as HTMLButtonElement;
+    back.dataset.go = 'start';
+    back.querySelector('.glyph')!.textContent = '↺';
+    back.querySelector('.ask')!.textContent = 'Back to the start';
+    box.append(back);
+  };
+
+  const open = (id: string, from?: { x: number; y: number }, push = true) => {
+    if (id === current) return;
+    const prev = current;
+    current = id;
+    if (id === 'start') {
+      const s = document.querySelector<HTMLElement>(`[data-scene="${prev}"]`);
+      if (s) {
+        s.classList.remove('open');
+        setTimeout(() => {
+          if (current !== prev) s.hidden = true;
+        }, 760);
+      }
+      soft({ up: false });
+    } else {
+      const s = document.querySelector<HTMLElement>(`[data-scene="${id}"]`)!;
+      s.style.setProperty('--ox', `${from?.x ?? innerWidth / 2}px`);
+      s.style.setProperty('--oy', `${(from?.y ?? innerHeight / 2) - 60}px`);
+      renderNext(s, id);
+      s.hidden = false;
+      s.scrollTop = 0;
+      s.style.zIndex = String(30 + path.length + 1);
+      void s.offsetWidth; // commit the closed circle first, so the reveal transition runs
+      s.classList.add('open');
+      dispatchEvent(new Event('resize')); // let the story map size itself now it's visible
+      whoosh({ dur: 0.8, from: 300, to: 2400, gain: 0.25 });
+      // close the scene we came from once the new one covers it
+      if (prev !== 'start') {
+        const p = document.querySelector<HTMLElement>(`[data-scene="${prev}"]`);
+        setTimeout(() => {
+          if (current === prev || !p) return;
+          p.classList.remove('open');
+          p.hidden = true;
+        }, 780);
+      }
+      seen.add(id);
+      document.querySelector(`.door[data-go="${id}"]`)?.classList.add('seen');
+      if (path[path.length - 1] !== id) path.push(id);
+    }
+    renderTrail();
+    if (push) history.pushState({ id }, '', id === 'start' ? location.pathname : `#${id}`);
+  };
+
+  addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-go]');
+    if (!b) return;
+    open(b.dataset.go!, { x: e.clientX, y: e.clientY });
+  });
+  addEventListener('popstate', () => open(location.hash.slice(1) || 'start', undefined, false));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && current !== 'start') open('start');
+  });
+  if (location.hash && label[location.hash.slice(1)]) open(location.hash.slice(1), undefined, false);
+</script>

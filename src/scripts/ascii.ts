@@ -34,6 +34,11 @@ export function charFor(lum: number, invert = false, focus = 1) {
 export function buildGrid(img: HTMLImageElement | ImageBitmap, boxW: number, boxH: number, cols = 56): AsciiGrid {
   const iw = img instanceof HTMLImageElement ? img.naturalWidth : img.width;
   const ih = img instanceof HTMLImageElement ? img.naturalHeight : img.height;
+  // a box with no layout yet (e.g. a background tab) would give a NaN grid: use a sane default
+  if (!(boxW > 0 && boxH > 0)) {
+    boxW = 320;
+    boxH = 400;
+  }
   const cw = boxW / cols;
   const ch = cw * 1.7; // monospace cells are taller than wide
   const rows = Math.max(1, Math.floor(boxH / ch));
