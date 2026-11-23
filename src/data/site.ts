@@ -162,3 +162,69 @@ export const sketches: Record<string, { origin: string; kind: 'kanban' | 'journa
   Runway: { origin: 'Started as a spreadsheet I was tired of updating.', kind: 'kanban' },
   LifeOS: { origin: 'Started because my journal had opinions but no follow-through.', kind: 'journal' },
 };
+
+/* ------------------------------------------------------------------
+   The story so far: the flight-path map.
+   Each stop is a point on the route and a chapter card.
+   [Square brackets] are placeholders for Kalash to fill in, and the
+   lon/lat of the first two stops should move to the real places.
+------------------------------------------------------------------- */
+export type Stop = {
+  year: string;
+  place: string;
+  title: string;
+  line: string;
+  at: [lon: number, lat: number];
+};
+
+export const story: Stop[] = [
+  {
+    year: '[birth year]',
+    place: '[US city], USA',
+    title: 'Born in the States',
+    line: "Chapter one. I didn't stay long.",
+    at: [-77, 39], // placeholder: move to the real city
+  },
+  {
+    year: '[year moved]',
+    place: '[hometown], India',
+    title: 'Moved to India',
+    line: 'Where I actually grew up. [One line about growing up there.]',
+    at: [77.2, 28.6], // placeholder: move to the real hometown
+  },
+  {
+    year: '2019',
+    place: 'Chandigarh',
+    title: 'Punjab Engineering College',
+    line: 'Computer science by day, Editor-in-Chief of the English Editorial Board by night.',
+    at: [76.78, 30.73],
+  },
+  {
+    year: '2022',
+    place: 'Mumbai',
+    title: 'Interned at JPMorgan Chase',
+    line: 'Six months, mid-degree. They asked me back.',
+    at: [72.88, 19.08],
+  },
+  {
+    year: '2023',
+    place: 'Mumbai & Bangalore',
+    title: 'Engineer at JPMorgan Chase',
+    line: "Three years of shipping, and slowly becoming the person asking 'why are we building this?'",
+    at: [77.59, 12.97],
+  },
+  {
+    year: '2026',
+    place: 'Los Angeles',
+    title: 'UCLA Anderson',
+    line: 'Left JPMorgan for an MBA. Full circle: back in the States.',
+    at: [-118.24, 34.05],
+  },
+];
+
+// The last card, after the plane lands in LA
+export const storyNext = {
+  year: '2027',
+  title: 'To be continued…',
+  line: 'Next stop: a PM internship, Summer 2027. Your team, maybe?',
+};

@@ -392,6 +392,9 @@ for (let i = 0; i <= 120; i++) {
     // Everything heavy is prepared while the enter screen is up, so the first frame is instant
     const run = async () => {
       if (lifted) return;
+      // a page opened in a background tab may have no layout yet: prepare once it's on screen
+      if (!frame.getBoundingClientRect().width) await started;
+      if (lifted) return;
       const dpr = Math.min(2, devicePixelRatio || 1);
       const W = (canvas.width = innerWidth * dpr);
       const H = (canvas.height = innerHeight * dpr);

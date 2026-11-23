@@ -7,11 +7,12 @@ import SoundToggle from './SoundToggle.astro';
 import { links as site } from '../data/site';
 
 const links = [
-  { n: '01', label: 'Experience', href: '#experience' },
-  { n: '02', label: 'Education', href: '#education' },
-  { n: '03', label: 'Projects', href: '#projects' },
-  { n: '04', label: 'About', href: '#about' },
-  { n: '05', label: 'Contact', href: '#contact' },
+  { n: '01', label: 'Story', href: '#story' },
+  { n: '02', label: 'Experience', href: '#experience' },
+  { n: '03', label: 'Education', href: '#education' },
+  { n: '04', label: 'Projects', href: '#projects' },
+  { n: '05', label: 'About', href: '#about' },
+  { n: '06', label: 'Contact', href: '#contact' },
 ];
 ---
 
@@ -196,7 +197,34 @@ const links = [
     transform: scaleX(var(--progress, 0));
   }
 
-  @media (max-width: 820px) {
+  /* phones: five controls in the bar, so everything gets a little more compact */
+  @media (max-width: 560px) {
+    .actions {
+      gap: 6px;
+    }
+    .actions :global(.sound-toggle),
+    .actions :global(.theme-toggle),
+    .menu {
+      width: 36px;
+      height: 36px;
+    }
+    .actions .btn-small {
+      padding: 9px 12px;
+    }
+  }
+
+  /* six links and four controls: tighten up on smaller laptops before switching to the menu */
+  @media (max-width: 1220px) {
+    .brand span,
+    .n {
+      display: none;
+    }
+    .links a {
+      padding: 8px 9px;
+    }
+  }
+
+  @media (max-width: 960px) {
     .brand span {
       display: none;
     }

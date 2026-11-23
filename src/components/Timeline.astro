@@ -102,6 +102,8 @@ const { id, n, label, title, entries } = Astro.props;
     margin: 0 auto;
     padding: clamp(80px, 10vw, 140px) var(--gutter);
     border-top: 1px solid var(--line);
+    /* metric tooltips near the right edge must never widen the page (phones zoomed out) */
+    overflow-x: clip;
   }
 
   .timeline {

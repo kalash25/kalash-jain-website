@@ -8,6 +8,7 @@ import About from '../components/About.astro';
 import Contact from '../components/Contact.astro';
 import Critter from '../components/Critter.astro';
 import Intro from '../components/Intro.astro';
+import Story from '../components/Story.astro';
 import { experience, education } from '../data/site';
 ---
 
@@ -18,16 +19,17 @@ import { experience, education } from '../data/site';
 
   <main>
     <Hero />
+    <Story />
     <Timeline
       id="experience"
-      n="01"
+      n="02"
       label="Experience"
       title="Where I've <em>worked.</em>"
       entries={experience}
     />
     <Timeline
       id="education"
-      n="02"
+      n="03"
       label="Education"
       title="Where I've <em>studied.</em>"
       entries={education}
