@@ -1,0 +1,81 @@
+<!-- Speaker toggle: sound effects on/off, remembered across visits (localStorage 'sound') -->
+<button class="sound-toggle" type="button" aria-pressed="true" aria-label="Sound effects" data-sound-toggle>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path class="body" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path>
+    <path class="wave w1" d="M15.5 9.2a4 4 0 0 1 0 5.6"></path>
+    <path class="wave w2" d="M18 6.8a7.5 7.5 0 0 1 0 10.4"></path>
+    <path class="off" d="M16 9.5l5 5M21 9.5l-5 5"></path>
+  </svg>
+</button>
+
+<style>
+  .sound-toggle {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.3s var(--ease-out);
+  }
+  .sound-toggle:hover {
+    border-color: var(--accent);
+  }
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .wave,
+  .off {
+    transition: opacity 0.25s var(--ease-out);
+  }
+  .off {
+    opacity: 0;
+  }
+  [aria-pressed='false'] .wave {
+    opacity: 0;
+  }
+  [aria-pressed='false'] .off {
+    opacity: 1;
+  }
+  /* while sound is on, the waves breathe a little */
+  @media (prefers-reduced-motion: no-preference) {
+    [aria-pressed='true'] .w2 {
+      animation: breathe 2.4s ease-in-out infinite;
+    }
+  }
+  @keyframes breathe {
+    50% {
+      opacity: 0.35;
+    }
+  }
+</style>
+
+<script>
+  import { wanted, setWanted, unlock, soft } from '../scripts/sound';
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-sound-toggle]');
+  const sync = () => btn?.setAttribute('aria-pressed', String(wanted()));
+  sync();
+  addEventListener('sound:change', sync);
+  btn?.addEventListener('click', () => {
+    const on = !wanted();
+    if (on) unlock(); // this click is the gesture that allows audio
+    setWanted(on);
+    if (on) setTimeout(() => soft(), 30);
+    dispatchEvent(
+      new CustomEvent('toast', {
+        detail: on ? 'Sound on. Headphones recommended.' : 'Muted. The silent film edition.',
+      }),
+    );
+  });
+</script>

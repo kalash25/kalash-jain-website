@@ -21,7 +21,10 @@ const afterIntro = new Promise<void>((resolve) => {
   if (document.documentElement.classList.contains('intro-done')) go();
   else {
     addEventListener('intro:done', go, { once: true });
-    setTimeout(resolve, 3000);
+    // fallback, counted from the enter-screen press rather than page load
+    if (document.documentElement.dataset.boot === 'gate')
+      addEventListener('boot:start', () => setTimeout(resolve, 3000), { once: true });
+    else setTimeout(resolve, 3000);
   }
 });
 

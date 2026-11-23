@@ -66,9 +66,19 @@ const shareImage = new URL('/og-v2.jpg', Astro.site);
         });
         // Safety net: if the intro script never runs (failed load, blocked, stale page
         // across a deploy), reveal the content anyway instead of leaving it hidden.
-        setTimeout(function () {
-          root.classList.add('intro-done');
-        }, 8000);
+        // It counts from the moment the show starts (the enter-screen press), not from page load.
+        var armed = false;
+        var arm = function () {
+          if (armed) return;
+          armed = true;
+          setTimeout(function () {
+            root.classList.add('intro-done');
+          }, 8000);
+        };
+        addEventListener('boot:start', arm);
+        addEventListener('DOMContentLoaded', function () {
+          if (root.dataset.boot !== 'gate') arm();
+        });
         try {
           if (sessionStorage.getItem('dc') === '1') root.classList.add('dc');
           var t = localStorage.getItem('theme');

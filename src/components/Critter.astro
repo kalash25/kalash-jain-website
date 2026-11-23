@@ -323,7 +323,10 @@
       setTimeout(() => bubble.classList.remove('show'), 2800);
       setTimeout(hint, 14000 + Math.random() * 8000);
     };
-    setTimeout(hint, 7000);
+    // first hint a while after the page is actually showing
+    const firstHint = () => setTimeout(hint, 7000);
+    if (document.documentElement.classList.contains('intro-done')) firstHint();
+    else addEventListener('intro:done', firstHint, { once: true });
 
     el.addEventListener('pointerdown', freeze);
     el.addEventListener('click', () => {

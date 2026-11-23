@@ -1,6 +1,7 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
 import DirectorsCut from './DirectorsCut.astro';
+import SoundToggle from './SoundToggle.astro';
 
 // Numbered jump links to each section
 import { links as site } from '../data/site';
@@ -43,6 +44,7 @@ const links = [
         Resume <span aria-hidden="true">↓</span>
       </a>
       <DirectorsCut />
+      <SoundToggle />
       <ThemeToggle />
       <button class="menu" type="button" aria-expanded="false" aria-controls="nav-links" data-menu>
         <span class="sr-only">Menu</span>

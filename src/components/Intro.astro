@@ -2,6 +2,8 @@
 // ASCII splash intro, on every load:
 // product words stream across the screen, shatter into characters that crawl in and
 // assemble the portrait, then the curtain lifts. ~5s, click or any key to skip, skipped entirely for reduced motion.
+// It opens on an enter screen: browsers only allow sound after a click or key press, and that
+// press is what starts the show (with sound, or quietly).
 import { getImage } from 'astro:assets';
 import portrait from '../assets/portrait-dark.webp';
 
@@ -16,29 +18,86 @@ for (let i = 0; i <= 120; i++) {
 }
 ---
 
-<div class="boot" data-boot-overlay aria-hidden="true">
-  <canvas class="splash" data-boot-canvas></canvas>
-  <div class="stage">
+<div class="boot" data-boot-overlay>
+  <div class="gate" data-boot-gate>
+    <p class="gate-kicker">Kalash Jain · a portfolio in one take</p>
+    <p class="gate-title">Press anything<br />to begin.</p>
+    <div class="gate-actions">
+      <button type="button" class="gate-btn" data-enter="sound">
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        Enter with sound
+      </button>
+      <button type="button" class="gate-quiet" data-enter="quiet">enter quietly</button>
+    </div>
+    <p class="gate-note">best with headphones · about five seconds</p>
+  </div>
+  <canvas class="splash" data-boot-canvas aria-hidden="true"></canvas>
+  <div class="stage" aria-hidden="true">
     <div class="frame" data-boot-frame>
       <img src={img.src} alt="" data-boot-img decoding="async" />
     </div>
     <svg class="wave" viewBox="0 0 1000 60" preserveAspectRatio="none"><path d={wave}></path></svg>
     <p class="status" data-boot-status>thinking in products</p>
   </div>
-  <p class="skip">click anywhere to skip</p>
+  <p class="skip" aria-hidden="true">click anywhere to skip</p>
 </div>
 
-<!-- Runs immediately so the overlay is decided before first paint -->
+<!-- Runs immediately so the overlay is decided before first paint. The enter screen is
+     handled here too (not in the bundled script), so it can never get stuck: one press always
+     starts the show, and the page's own safety nets count from that press. -->
 <script is:inline>
-  document.documentElement.dataset.boot = matchMedia('(prefers-reduced-motion: reduce)').matches
-    ? 'skipped'
-    : 'running';
+  (function () {
+    var root = document.documentElement;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      root.dataset.boot = 'skipped';
+      return;
+    }
+    root.dataset.boot = 'gate';
+    var gate = document.querySelector('[data-boot-gate]');
+    var first = gate && gate.querySelector('[data-enter="sound"]');
+    if (first) first.focus({ preventScroll: true });
+    var go = function (withSound) {
+      if (root.dataset.boot !== 'gate') return;
+      if (withSound) {
+        // the AudioContext has to be created inside the gesture to be allowed to play
+        try {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) {
+            window.__ac = window.__ac || new AC();
+            window.__ac.resume();
+          }
+        } catch (e) {}
+      }
+      try {
+        localStorage.setItem('sound', withSound ? 'on' : 'off');
+      } catch (e) {}
+      dispatchEvent(new Event('sound:change'));
+      root.dataset.boot = 'running';
+      removeEventListener('click', onClick, true);
+      removeEventListener('keydown', onKey, true);
+      dispatchEvent(new Event('boot:start'));
+    };
+    var onClick = function (e) {
+      var b = e.target.closest && e.target.closest('[data-enter]');
+      go(!(b && b.dataset.enter === 'quiet'));
+    };
+    var onKey = function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.key === 'Tab' || e.key === 'Shift') return;
+      // Enter/Space on the focused "quietly" button means quietly; Escape too
+      var quiet = e.key === 'Escape' || (document.activeElement && document.activeElement.dataset && document.activeElement.dataset.enter === 'quiet');
+      e.preventDefault();
+      go(!quiet);
+    };
+    addEventListener('click', onClick, true);
+    addEventListener('keydown', onKey, true);
+  })();
 </script>
 
 <style>
   .boot {
     display: none;
   }
+  :global(html.js[data-boot='gate']) .boot,
   :global(html.js[data-boot='running']) .boot {
     position: fixed;
     inset: 0;
@@ -48,7 +107,9 @@ for (let i = 0; i <= 120; i++) {
     background: var(--bg);
     clip-path: inset(0 0 0 0);
     transition: clip-path 0.8s cubic-bezier(0.76, 0, 0.24, 1);
-    /* safety net: never block the page for more than 7s */
+  }
+  /* safety net: never block the page for more than 7s after the show starts */
+  :global(html.js[data-boot='running']) .boot {
     animation: boot-away 0.01s 7s forwards;
   }
   :global(html.js[data-boot='running']) .boot.lift {
@@ -58,6 +119,127 @@ for (let i = 0; i <= 120; i++) {
     to {
       visibility: hidden;
       pointer-events: none;
+    }
+  }
+
+  /* ---- Enter screen ---- */
+  .gate {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+  }
+  :global(html[data-boot='gate']) .gate {
+    display: flex;
+  }
+  :global(html[data-boot='gate']) .splash,
+  :global(html[data-boot='gate']) .stage,
+  :global(html[data-boot='gate']) .skip {
+    visibility: hidden;
+  }
+  .gate-kicker,
+  .gate-note {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .gate-note {
+    font-size: 0.62rem;
+    opacity: 0.75;
+  }
+  .gate-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: clamp(2.6rem, 8vw, 5.6rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+    animation: gate-in 0.9s var(--ease-out) both;
+  }
+  @keyframes gate-in {
+    from {
+      opacity: 0;
+      translate: 0 14px;
+    }
+  }
+  .gate-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 20px;
+  }
+  .gate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 22px;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font: 500 0.95rem/1 var(--font-body);
+    cursor: pointer;
+    transition: translate 0.25s var(--ease-out);
+  }
+  .gate-btn:hover {
+    translate: 0 -2px;
+  }
+  .gate-quiet {
+    padding: 8px 4px;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: 500 0.85rem/1 var(--font-body);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  .gate-quiet:hover {
+    color: var(--ink);
+  }
+  /* a tiny equaliser, the only thing moving on the enter screen */
+  .eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+  }
+  .eq i {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    background: currentColor;
+    transform-origin: bottom;
+    animation: eq 1.1s ease-in-out infinite;
+  }
+  .eq i:nth-child(2) {
+    animation-delay: -0.4s;
+  }
+  .eq i:nth-child(3) {
+    animation-delay: -0.75s;
+  }
+  .eq i:nth-child(4) {
+    animation-delay: -0.2s;
+  }
+  @keyframes eq {
+    0%,
+    100% {
+      transform: scaleY(0.3);
+    }
+    50% {
+      transform: scaleY(1);
     }
   }
 
@@ -143,6 +325,7 @@ for (let i = 0; i <= 120; i++) {
 
 <script>
   import { buildGrid, charFor, RAMP } from '../scripts/ascii';
+  import * as sfx from '../scripts/sound';
 
   const root = document.documentElement;
   const boot = document.querySelector<HTMLElement>('[data-boot-overlay]');
@@ -153,7 +336,7 @@ for (let i = 0; i <= 120; i++) {
     boot?.remove();
   };
 
-  if (!boot || root.dataset.boot !== 'running') {
+  if (!boot || (root.dataset.boot !== 'gate' && root.dataset.boot !== 'running')) {
     boot?.remove();
     dispatchEvent(new Event('boot:done'));
   } else {
@@ -167,17 +350,31 @@ for (let i = 0; i <= 120; i++) {
     const light = root.dataset.theme === 'light';
     let lifted = false;
     let raf = 0;
+    let stopDrone: (fade?: number) => void = () => {};
 
     const lift = () => {
       if (lifted) return;
       lifted = true;
       cancelAnimationFrame(raf);
+      stopDrone(0.3);
+      sfx.whoosh({ dur: 0.9, from: 140, to: 1100, gain: 0.32 });
       boot.classList.add('lift');
       setTimeout(finish, 820);
     };
-    addEventListener('pointerdown', lift, { once: true });
-    addEventListener('keydown', lift, { once: true });
-    setTimeout(lift, 7000); // hard cap even if the image is slow
+
+    // The show starts on the enter-screen press (handled by the inline script above)
+    const started = new Promise<void>((res) => {
+      if (root.dataset.boot === 'running') return res();
+      addEventListener('boot:start', () => res(), { once: true });
+    });
+    started.then(() => {
+      // from here a click or key skips; listen on the next tick so the starting press doesn't count
+      setTimeout(() => {
+        addEventListener('pointerdown', lift, { once: true });
+        addEventListener('keydown', lift, { once: true });
+      }, 0);
+      setTimeout(lift, 7000); // hard cap even if the image is slow
+    });
 
     // Timeline (ms): one continuous take, nothing holds until the portrait is complete
     const SHATTER_START = 850; // words stream across the screen until here...
@@ -192,6 +389,7 @@ for (let i = 0; i <= 120; i++) {
       'metrics', 'launch', 'iterate', 'customer', 'why?', 'scope', 'backlog', 'insight', 'go-to-market',
     ];
 
+    // Everything heavy is prepared while the enter screen is up, so the first frame is instant
     const run = async () => {
       if (lifted) return;
       const dpr = Math.min(2, devicePixelRatio || 1);
@@ -317,8 +515,12 @@ for (let i = 0; i <= 120; i++) {
         p.dur = Math.max(900, landAt - (p.breakAt + p.lag));
       }
 
+      await started;
+      if (lifted) return;
       boot.classList.add('go');
+      stopDrone = sfx.drone();
       const t0 = performance.now();
+      const cue = { shatter: false, rise: false, hit: false };
       const easeIn = (x: number) => x * x * x;
       const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
       const TAU = 380; // how long a letter keeps its line's momentum after breaking (ms)
@@ -328,6 +530,22 @@ for (let i = 0; i <= 120; i++) {
         if (lifted) return;
         const t = now - t0;
         ctx.clearRect(0, 0, W, H);
+
+        // sound cues ride the same clock as the picture
+        if (!cue.shatter && t >= SHATTER_START) {
+          cue.shatter = true;
+          stopDrone(0.6);
+          sfx.whoosh({ dur: 1.3, from: 260, to: 3200, gain: 0.55 });
+        }
+        if (!cue.rise && t >= LAND_FROM - 150) {
+          cue.rise = true;
+          sfx.riser({ dur: (LAND_TO - LAND_FROM + 150) / 1000 });
+        }
+        if (t > LAND_FROM && t < LAND_TO && Math.random() < 0.7) sfx.tick((t - LAND_FROM) / (LAND_TO - LAND_FROM));
+        if (!cue.hit && t >= LAND_TO) {
+          cue.hit = true;
+          sfx.hit();
+        }
 
         if (t < SHATTER_START) {
           // the word stream, drawn letter by letter (same cost as everything after)

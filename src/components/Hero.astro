@@ -614,11 +614,13 @@ const letters = [...name];
     else raf = 0;
   }
   // Wait for the ASCII boot overlay (if it's playing) before the hero's own intro starts
-  const booting = root.dataset.boot === 'running';
+  const booting = root.dataset.boot === 'running' || root.dataset.boot === 'gate';
   const bootReady = new Promise<void>((res) => {
     if (!booting) return res();
     addEventListener('boot:done', () => res(), { once: true });
-    setTimeout(res, 7000); // never wait forever
+    // never wait forever, counting from the enter-screen press
+    if (root.dataset.boot === 'running') setTimeout(res, 7000);
+    else addEventListener('boot:start', () => setTimeout(res, 7000), { once: true });
   });
   let begun = false;
 
@@ -642,9 +644,10 @@ const letters = [...name];
           start = performance.now() - (booting ? 450 : 0);
           begun = true;
           run();
+          // listen only once the hero's own intro is running, so the enter press doesn't use it up
+          addEventListener('keydown', skip, { once: true });
+          addEventListener('pointerdown', skip, { once: true });
         });
-      addEventListener('keydown', skip, { once: true });
-      addEventListener('pointerdown', skip, { once: true });
 
       hero.addEventListener('pointermove', (ev) => {
         const r = svg.getBoundingClientRect();
