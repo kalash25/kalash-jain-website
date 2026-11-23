@@ -30,7 +30,7 @@ if (!reduce) {
 
   /* Smooth scroll, driven by GSAP's ticker so ScrollTrigger stays in sync */
   const lenis = new Lenis({
-    lerp: 0.1,
+    lerp: 0.12,
     anchors: { offset: -72 },
   });
   lenis.on('scroll', ScrollTrigger.update);
@@ -51,19 +51,14 @@ if (!reduce) {
       });
     });
 
-    /* Scene 1 (desktop): the hero holds for a beat as you leave it.
-       The photo pushes in, the copy steps back, the name opens up, then it cuts to Experience. */
-    const mm = gsap.matchMedia();
-    mm.add('(min-width: 821px)', () => {
-      const hero = document.querySelector<HTMLElement>('[data-hero]');
-      if (!hero) return;
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: hero, start: 'top top', end: '+=55%', pin: true, scrub: 0.6 },
-      });
-      tl.to(hero.querySelector('.media'), { scale: 1.07, yPercent: -6, ease: 'none' }, 0)
-        .to(hero.querySelector('.copy'), { yPercent: -8, opacity: 0.35, ease: 'none' }, 0)
-        .to(hero.querySelector('.name'), { letterSpacing: '-0.01em', ease: 'none' }, 0);
-    });
+    /* Scene 1: as you leave the hero, the photo drifts up slower than the page and the copy
+       steps back. Transform/opacity only (no pinning, no layout work) so scrolling stays smooth. */
+    const hero = document.querySelector<HTMLElement>('[data-hero]');
+    if (hero) {
+      const leave = { trigger: hero, start: 'top top', end: 'bottom top', scrub: true };
+      gsap.to(hero.querySelector('.media'), { yPercent: 12, scale: 1.04, ease: 'none', scrollTrigger: leave });
+      gsap.to(hero.querySelector('.copy'), { yPercent: -6, opacity: 0.4, ease: 'none', scrollTrigger: leave });
+    }
 
     /* Scene 2: project cards are dealt onto the table from a stacked deck */
     const deck = document.querySelector<HTMLElement>('[data-deck]');

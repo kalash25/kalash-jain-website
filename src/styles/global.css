@@ -7,15 +7,18 @@
 :root {
   --hue: 285;
 
-  --bg: oklch(0.145 0.012 var(--hue));
-  --surface: oklch(0.19 0.016 var(--hue));
-  --ink: oklch(0.97 0.006 var(--hue));
-  --muted: oklch(0.72 0.022 var(--hue));
-  --line: oklch(0.32 0.024 var(--hue));
-  --accent: oklch(0.72 0.16 var(--hue));
-  --accent-ink: oklch(0.16 0.03 var(--hue));
-  --glow: oklch(0.52 0.24 var(--hue) / 0.38);
-  --grain-opacity: 0.07;
+  /* Dark = "Studio Violet": near-black, warm white, electric violet */
+  --bg: #0a090d;
+  --surface: #131118;
+  --ink: #f3efe7;
+  --muted: #a39eb0;
+  --line: #27242f;
+  --accent: #9d87ff; /* text-safe violet on black */
+  --accent-ink: #0a090d;
+  --block: #7b5cff; /* solid colour blocks */
+  --on-block: #0a090d;
+  --glow: rgb(123 92 255 / 0.22);
+  --grain-opacity: 0.06;
 
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
@@ -27,16 +30,19 @@
   color-scheme: dark;
 }
 
+/* Light = "Ink & Lilac": warm paper, ink black, violet */
 :root[data-theme='light'] {
-  --bg: oklch(0.985 0.004 var(--hue));
-  --surface: oklch(0.955 0.01 var(--hue));
-  --ink: oklch(0.17 0.016 var(--hue));
-  --muted: oklch(0.45 0.022 var(--hue));
-  --line: oklch(0.86 0.016 var(--hue));
-  --accent: oklch(0.5 0.22 var(--hue));
-  --accent-ink: oklch(0.985 0.004 var(--hue));
-  --glow: oklch(0.7 0.16 var(--hue) / 0.28);
-  --grain-opacity: 0.045;
+  --bg: #f2eee6;
+  --surface: #eae4d9;
+  --ink: #121016;
+  --muted: #625d6d;
+  --line: #d9d1c3;
+  --accent: #5b3df5;
+  --accent-ink: #ffffff;
+  --block: #5b3df5;
+  --on-block: #ffffff;
+  --glow: rgb(91 61 245 / 0.12);
+  --grain-opacity: 0.035;
 
   color-scheme: light;
 }

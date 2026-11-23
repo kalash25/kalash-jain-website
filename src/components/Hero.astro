@@ -618,7 +618,7 @@ const letters = [...name];
   const bootReady = new Promise<void>((res) => {
     if (!booting) return res();
     addEventListener('boot:done', () => res(), { once: true });
-    setTimeout(res, 5200); // never wait forever
+    setTimeout(res, 7000); // never wait forever
   });
   let begun = false;
 
@@ -804,6 +804,7 @@ const letters = [...name];
     drawGrid(srcCanvas, buildGrid(bitmap ?? img, srcCanvas.width, srcCanvas.height, 58), {
       bg: css.getPropertyValue('--bg').trim() || '#000',
       color: css.getPropertyValue('--accent').trim() || '#9f8cff',
+      invert: root.dataset.theme === 'light',
     });
     srcReady = true;
   };

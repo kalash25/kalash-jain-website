@@ -46,11 +46,22 @@ const channels = [
 </section>
 
 <style>
+  /* Contact is one solid block of the palette's violet, edge to edge.
+     Local tokens re-point everything inside it to read on the block. */
   .section {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: clamp(80px, 10vw, 140px) var(--gutter);
-    border-top: 1px solid var(--line);
+    --ink: var(--on-block);
+    --muted: color-mix(in srgb, var(--on-block) 72%, transparent);
+    --line: color-mix(in srgb, var(--on-block) 28%, transparent);
+    --accent: var(--on-block);
+    --accent-ink: var(--block);
+    background: var(--block);
+    color: var(--on-block);
+    padding: clamp(80px, 10vw, 140px)
+      max(var(--gutter), calc((100% - 1320px) / 2 + var(--gutter)));
+  }
+  .section ::selection {
+    background: var(--on-block);
+    color: var(--block);
   }
   .intro {
     max-width: 52ch;

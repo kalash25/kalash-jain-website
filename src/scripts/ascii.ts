@@ -10,10 +10,21 @@ export type AsciiGrid = {
   rows: number;
   chars: string[];
   lums: number[];
+  focus: number[]; // 1 at the face, fading to 0 at the edges (a soft vignette)
   order: number[]; // random reveal order, so characters "assemble" in a scatter
 };
 
-const RAMP = ' .:-=+*#%@';
+export const RAMP = ' .:-=+*#%@';
+
+/**
+ * Character for a (0–1) luminance. On a dark background bright pixels get dense
+ * characters; on a light background it's flipped, so dark pixels get the ink.
+ */
+export function charFor(lum: number, invert = false, focus = 1) {
+  // light mode: ink thins toward the edges so the face, not the backdrop, carries the drawing
+  const v = invert ? (1 - lum) * focus : lum;
+  return RAMP[Math.min(RAMP.length - 1, Math.floor(Math.pow(v, 0.9) * RAMP.length))];
+}
 
 /**
  * Sample the image into a character grid that cover-fits a box of the given aspect ratio.
@@ -61,17 +72,21 @@ export function buildGrid(img: HTMLImageElement | ImageBitmap, boxW: number, box
 
   const chars: string[] = [];
   const lums: number[] = [];
-  for (const r of raw) {
+  const focus: number[] = [];
+  raw.forEach((r, i) => {
     const lum = Math.min(1, Math.max(0, (r - lo) / span));
     lums.push(lum);
-    chars.push(RAMP[Math.min(RAMP.length - 1, Math.floor(Math.pow(lum, 0.9) * RAMP.length))]);
-  }
+    chars.push(charFor(lum));
+    const dx = ((i % cols) / cols - 0.5) / 0.5;
+    const dy = (Math.floor(i / cols) / rows - 0.4) / 0.62;
+    focus.push(Math.max(0, Math.min(1, 1.35 - Math.pow(dx * dx + dy * dy, 0.9) * 1.25)));
+  });
   const order = chars.map((_, i) => i);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  return { cols, rows, chars, lums, order };
+  return { cols, rows, chars, lums, focus, order };
 }
 
 /** Size a canvas to its CSS box at device pixel ratio; returns the 2D context. */
@@ -90,7 +105,13 @@ export function fitCanvas(canvas: HTMLCanvasElement) {
 export function drawGrid(
   canvas: HTMLCanvasElement,
   grid: AsciiGrid,
-  { progress = 1, bg = '#000', color = '#9f8cff', font = '"Geist Mono Variable", ui-monospace, monospace' } = {},
+  {
+    progress = 1,
+    bg = '#000',
+    color = '#9f8cff',
+    invert = false,
+    font = '"Geist Mono Variable", ui-monospace, monospace',
+  } = {},
 ) {
   const ctx = canvas.getContext('2d')!;
   const cw = canvas.width / grid.cols;
@@ -103,9 +124,10 @@ export function drawGrid(
   const shown = Math.floor(grid.order.length * Math.max(0, Math.min(1, progress)));
   for (let k = 0; k < shown; k++) {
     const i = grid.order[k];
-    const c = grid.chars[i];
+    const c = invert ? charFor(grid.lums[i], true, grid.focus[i]) : grid.chars[i];
     if (c === ' ') continue;
-    ctx.globalAlpha = 0.25 + grid.lums[i] * 0.75;
+    const weight = invert ? (1 - grid.lums[i]) * grid.focus[i] : grid.lums[i];
+    ctx.globalAlpha = 0.25 + weight * 0.75;
     ctx.fillText(c, (i % grid.cols) * cw, Math.floor(i / grid.cols) * ch);
   }
   ctx.globalAlpha = 1;

@@ -57,11 +57,18 @@ const shareImage = new URL('/og-v2.jpg', Astro.site);
       (function () {
         var root = document.documentElement;
         root.classList.add('js');
+        // Every load starts at the very top (where the intro plays), never mid-page
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+        window.scrollTo(0, 0);
+        addEventListener('load', function () {
+          window.scrollTo(0, 0);
+        });
         // Safety net: if the intro script never runs (failed load, blocked, stale page
         // across a deploy), reveal the content anyway instead of leaving it hidden.
         setTimeout(function () {
           root.classList.add('intro-done');
-        }, 6000);
+        }, 8000);
         try {
           if (sessionStorage.getItem('dc') === '1') root.classList.add('dc');
           var t = localStorage.getItem('theme');

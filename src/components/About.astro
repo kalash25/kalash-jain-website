@@ -4,11 +4,7 @@ import SectionHead from './SectionHead.astro';
 import photo from '../assets/portrait-ucla.jpg';
 import { skills } from '../data/site';
 
-// Two rows drifting in opposite directions; each list is doubled so the loop never shows a gap
-const rows = [
-  { label: 'Product & AI', items: [...skills.product, ...skills.product], kind: 'product' },
-  { label: 'Technical', items: [...skills.technical, ...skills.technical], kind: 'tech' },
-];
+const allSkills = [...skills.product, ...skills.technical];
 ---
 
 <section id="about" class="section" aria-labelledby="about-h">
@@ -54,29 +50,24 @@ const rows = [
     </div>
   </div>
 
-  <!-- Toolkit ticker: two rows in opposite directions; static for reduced motion -->
-  <div class="toolkit">
-    <p class="mono kit-label">Toolkit</p>
-    {
-      rows.map((row) => (
-        <div class:list={['marquee', row.kind]} aria-label={row.label}>
-          <div class="track">
-            {[0, 1].map((copy) => (
-              <ul aria-hidden={copy === 1 ? 'true' : undefined}>
-                {row.items.map((item) => (
-                  <li>
-                    {item}
-                    <span class="sep" aria-hidden="true">
-                      ✦
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ))}
-          </div>
-        </div>
-      ))
-    }
+  <!-- Toolkit: one sentence that cycles through skills, plus a scannable list.
+       Hover a skill in the list and the sentence jumps to it. -->
+  <div class="toolkit" data-toolkit>
+    <p class="kit-label">Toolkit</p>
+    <p class="fluent">
+      <span class="lead">Fluent in</span>{' '}
+      <span class="skill" data-skill>{allSkills[0]}</span><span class="caret" aria-hidden="true"></span>
+    </p>
+    <div class="lists">
+      <div>
+        <p class="list-h">Product &amp; AI</p>
+        <ul>{skills.product.map((k) => <li data-skill-item={k}>{k}</li>)}</ul>
+      </div>
+      <div>
+        <p class="list-h">Technical</p>
+        <ul>{skills.technical.map((k) => <li data-skill-item={k}>{k}</li>)}</ul>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -144,61 +135,80 @@ const rows = [
   }
 
   .toolkit {
-    margin-top: clamp(56px, 7vw, 96px);
+    margin-top: clamp(64px, 8vw, 110px);
+    padding-top: 26px;
     border-top: 1px solid var(--line);
   }
-  .kit-label {
-    margin: 18px 0 4px;
+  .kit-label,
+  .list-h {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--accent);
   }
-  .marquee {
-    padding: 12px 0;
-    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  .fluent {
+    margin: 14px 0 30px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-variation-settings: 'opsz' 72;
+    font-size: clamp(2rem, 5.4vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
   }
-  .marquee.tech {
-    padding-bottom: 4px;
+  .lead {
+    color: var(--muted);
+    font-weight: 500;
   }
-  .track {
+  .skill {
+    color: var(--accent);
+  }
+  .caret {
+    display: inline-block;
+    width: 0.07em;
+    height: 0.8em;
+    margin-left: 0.08em;
+    vertical-align: -0.04em;
+    background: var(--accent);
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .lists {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 48px;
+  }
+  .lists ul {
     display: flex;
-    width: max-content;
-    animation: scroll 46s linear infinite;
-  }
-  .tech .track {
-    animation-duration: 56s;
-    animation-direction: reverse;
-  }
-  .track ul {
-    display: flex;
-    margin: 0;
+    flex-wrap: wrap;
+    gap: 2px 0;
+    margin: 10px 0 0;
     padding: 0;
     list-style: none;
   }
-  .track li {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(1.1rem, 2vw, 1.5rem);
-    letter-spacing: -0.02em;
-  }
-  .tech .track li {
-    font-family: var(--font-mono);
-    font-weight: 400;
-    font-size: clamp(0.8rem, 1.1vw, 0.95rem);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+  .lists li {
     color: var(--muted);
+    cursor: default;
+    transition: color 0.2s var(--ease-out);
   }
-  .sep {
-    margin: 0 28px;
-    color: var(--accent);
-    font-size: 0.7em;
+  .lists li:not(:last-child)::after {
+    content: '/';
+    margin: 0 10px;
+    color: var(--line);
   }
-  @keyframes scroll {
-    to {
-      transform: translateX(-50%);
-    }
+  .lists li.on,
+  .lists li:hover {
+    color: var(--ink);
+  }
+  .lists li.on {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 5px;
   }
 
   @media (max-width: 760px) {
@@ -210,20 +220,69 @@ const rows = [
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .track {
+    .caret {
       animation: none;
-      flex-wrap: wrap;
-      width: auto;
     }
-    .track ul + ul {
-      display: none;
-    }
-    .track ul {
-      flex-wrap: wrap;
-      row-gap: 8px;
-    }
-    .marquee {
-      mask-image: none;
+  }
+  @media (max-width: 640px) {
+    .lists {
+      grid-template-columns: 1fr;
     }
   }
 </style>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('[data-toolkit]');
+  const out = wrap?.querySelector<HTMLElement>('[data-skill]');
+  const items = [...(wrap?.querySelectorAll<HTMLElement>('[data-skill-item]') ?? [])];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (wrap && out && items.length) {
+    const glyphs = '.:-=+*#%@/<>{}';
+    let idx = 0;
+    let scramble = 0;
+    let cycle = 0;
+    let hovering = false;
+
+    // Swap the word with a quick character scramble (same motif as the ASCII intro)
+    const show = (i: number) => {
+      idx = i;
+      const target = items[i].dataset.skillItem!;
+      items.forEach((el, j) => el.classList.toggle('on', j === i));
+      clearInterval(scramble);
+      if (reduce) {
+        out.textContent = target;
+        return;
+      }
+      let f = 0;
+      const frames = 10;
+      scramble = window.setInterval(() => {
+        f++;
+        out.textContent = [...target]
+          .map((ch, k) => (ch === ' ' || f > (k / target.length) * frames + 2 ? ch : glyphs[(Math.random() * glyphs.length) | 0]))
+          .join('');
+        if (f > frames + 2) {
+          clearInterval(scramble);
+          out.textContent = target;
+        }
+      }, 38);
+    };
+    const start = () => {
+      clearInterval(cycle);
+      if (reduce) return;
+      cycle = window.setInterval(() => !hovering && show((idx + 1) % items.length), 1900);
+    };
+
+    items.forEach((el, i) =>
+      el.addEventListener('pointerenter', () => {
+        hovering = true;
+        show(i);
+      }),
+    );
+    wrap.querySelector('.lists')?.addEventListener('pointerleave', () => (hovering = false));
+
+    // only cycle while it's on screen
+    new IntersectionObserver(([e]) => (e.isIntersecting ? start() : clearInterval(cycle))).observe(wrap);
+    show(0);
+  }
+</script>

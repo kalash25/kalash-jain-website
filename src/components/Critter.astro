@@ -5,6 +5,7 @@
   Decorative only: hidden from screen readers and absent with reduced motion.
 -->
 <div class="roamer" data-roamer aria-hidden="true">
+  <span class="bubble" data-bubble>click me</span>
   <div class="body">
     <svg viewBox="0 0 100 100">
       <g class="ear ear-l">
@@ -54,6 +55,40 @@
     translate: var(--x) 12%;
     cursor: pointer;
     transition: translate var(--dur, 0s) linear;
+  }
+  /* little speech bubble so people know it's clickable */
+  .bubble {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    padding: 5px 9px;
+    border-radius: 9px;
+    background: var(--ink);
+    color: var(--bg);
+    font: 600 0.68rem/1 var(--font-mono);
+    white-space: nowrap;
+    translate: -50% 6px;
+    scale: 0.8;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.25s var(--ease-out),
+      translate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+      scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .bubble::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    translate: -50% 0;
+  }
+  .bubble.show {
+    opacity: 1;
+    translate: -50% 0;
+    scale: 1;
   }
   .body {
     width: 100%;
@@ -261,7 +296,39 @@
       { passive: true },
     );
 
+    /* Click = it stops right where it is (so you can click again), then wanders off later */
+    let resumeTimer = 0;
+    let clicked = false;
+    const freeze = () => {
+      clearTimeout(timer);
+      const left = el.getBoundingClientRect().left;
+      el.style.setProperty('--dur', '0s');
+      x = left;
+      el.style.setProperty('--x', `${x}px`);
+      el.classList.remove('walking');
+      el.classList.add('sitting');
+      clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(next, 6000);
+    };
+
+    /* Until someone clicks it, it occasionally says so */
+    const bubble = el.querySelector<HTMLElement>('[data-bubble]');
+    const hints = ['click me', 'psst', 'boop?', 'click me'];
+    let h = 0;
+    const hint = () => {
+      if (clicked || !bubble) return;
+      // the bubble rides along with it, so it can speak up while walking too
+      bubble.textContent = hints[h++ % hints.length];
+      bubble.classList.add('show');
+      setTimeout(() => bubble.classList.remove('show'), 2800);
+      setTimeout(hint, 14000 + Math.random() * 8000);
+    };
+    setTimeout(hint, 7000);
+
+    el.addEventListener('pointerdown', freeze);
     el.addEventListener('click', () => {
+      clicked = true;
+      bubble?.classList.remove('show');
       el.classList.remove('boop');
       void el.offsetWidth;
       el.classList.add('boop');
