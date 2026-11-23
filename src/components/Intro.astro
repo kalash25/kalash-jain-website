@@ -184,10 +184,10 @@ for (let i = 0; i <= 120; i++) {
     addEventListener('keydown', lift, { once: true });
     setTimeout(lift, 6200); // hard cap even if the image is slow
 
-    // Timeline (ms)
-    const WORDS = 1050; // lines of product words stream across the screen...
-    const BURST = 260; // ...shatter into stray characters that burst outward...
-    const CRAWL_END = 2900; // ...and crawl home to build the portrait by here
+    // Timeline (ms): one continuous take, no holds until the portrait is complete
+    const SHATTER_START = 850; // words stream across the screen until here...
+    const SHATTER_SPREAD = 520; // ...then break apart as a ripple out from the centre...
+    const CRAWL_END = 2950; // ...while every character keeps moving and crawls home by here
     const HOLD = 350; // the finished ASCII portrait, a beat
     const RESOLVE = 600; // photo fades in through it, then the curtain lifts
 
@@ -213,8 +213,9 @@ for (let i = 0; i <= 120; i++) {
       const glyphs = RAMP.slice(1) + '/\\<>{}[]01';
       const mono = '"Geist Mono Variable", ui-monospace, monospace';
       const muted = css.getPropertyValue('--muted').trim() || '#999';
+      const rnd = () => glyphs[(Math.random() * glyphs.length) | 0];
 
-      /* Phase 1: rows of product words, alternating direction and speed */
+      /* The word stream: rows of product words, alternating direction and speed */
       const rowPx = Math.max(13, Math.min(19, innerWidth / 70)) * dpr;
       const rowGap = rowPx * 2.1;
       const nRows = Math.ceil(H / rowGap) + 1;
@@ -226,8 +227,8 @@ for (let i = 0; i <= 120; i++) {
         return {
           y: r * rowGap + rowGap * 0.3,
           text,
-          width: text.length * charW / 3,
-          speed: (0.06 + Math.random() * 0.1) * dpr * (r % 2 ? 1 : -1),
+          width: (text.length * charW) / 3,
+          speed: (0.06 + Math.random() * 0.1) * dpr * (r % 2 ? 1 : -1), // px per ms
           phase: Math.random() * 2000,
           accent: Math.random() < 0.3,
         };
@@ -237,65 +238,81 @@ for (let i = 0; i <= 120; i++) {
         return off > 0 ? off - row.width : off;
       };
 
-      /* Phase 2 + 3: the portrait's characters, each starting from a letter in the word stream */
-      type P = { sx: number; sy: number; vx: number; vy: number; tx: number; ty: number; d: number; dur: number; wob: number; c: string; a: number };
-      const parts: P[] = [];
-      for (let i = 0; i < grid.lums.length; i++) {
-        const c = charFor(grid.lums[i], light, grid.focus[i]);
-        if (c === ' ') continue;
-        const w = light ? (1 - grid.lums[i]) * grid.focus[i] : grid.lums[i];
-        parts.push({
-          sx: 0, sy: 0, vx: 0, vy: 0,
-          tx: f.left * dpr + (i % grid.cols) * cw,
-          ty: f.top * dpr + Math.floor(i / grid.cols) * ch,
-          d: WORDS + BURST + Math.random() * 450,
-          dur: 750 + Math.random() * 450, // last one lands by ~2.96s
-          wob: (Math.random() - 0.5) * 110 * dpr,
-          c,
-          a: 0.25 + w * 0.75,
-        });
-      }
-      // when the words shatter, hand every particle the position of a real on-screen letter
-      let leftovers: { x: number; y: number }[] = [];
-      const shatter = () => {
-        const letters: { x: number; y: number }[] = [];
+      /* At the start of the shatter, every visible letter becomes its own particle.
+         Each keeps its line's velocity, breaks apart when the ripple reaches it,
+         and (if it's needed for the portrait) crawls to its cell. */
+      type L = {
+        x0: number; y: number; vx: number; ch: string; col: string; rowA: number;
+        breakAt: number; bvx: number; bvy: number; glyph: string;
+        // portrait target (absent for leftovers, which fade out)
+        tx?: number; ty?: number; c?: string; a?: number; lag?: number; dur?: number; wob?: number;
+      };
+      let letters: L[] = [];
+      const cxs = W / 2;
+      const cys = (f.top + f.height / 2) * dpr;
+      const maxD = Math.hypot(W, H) / 2;
+      const prepare = () => {
         for (const row of rows) {
-          const x0 = rowX(row, WORDS);
+          const x0 = rowX(row, SHATTER_START);
           for (let k = 0; k < row.text.length; k++) {
             const x = x0 + k * charW;
-            if (x < -charW || x > W) continue;
+            if (x < -charW * 2 || x > W + charW) continue;
             const chr = row.text[k];
             if (chr === ' ' || chr === '·') continue;
-            letters.push({ x, y: row.y });
+            const dist = Math.hypot(x - cxs, row.y - cys) / maxD;
+            const ang = Math.random() * Math.PI * 2;
+            const sp = (0.02 + Math.random() * 0.05) * dpr;
+            letters.push({
+              x0: x, y: row.y, vx: row.speed, ch: chr,
+              col: row.accent ? accent : muted, rowA: row.accent ? 0.85 : 0.5,
+              breakAt: SHATTER_START + Math.min(1, dist) * SHATTER_SPREAD + Math.random() * 90,
+              bvx: Math.cos(ang) * sp, bvy: Math.sin(ang) * sp, glyph: rnd(),
+            });
           }
         }
+        // hand each portrait cell a letter (shuffled), so the image is built from the words
         letters.sort(() => Math.random() - 0.5);
-        parts.forEach((p, i) => {
-          const L = letters[i % Math.max(1, letters.length)] ?? { x: Math.random() * W, y: Math.random() * H };
-          p.sx = L.x;
-          p.sy = L.y;
-          const ang = Math.random() * Math.PI * 2;
-          const sp = (20 + Math.random() * 60) * dpr;
-          p.vx = Math.cos(ang) * sp;
-          p.vy = Math.sin(ang) * sp;
-        });
-        leftovers = letters.slice(parts.length); // extra letters just fizzle out
+        let j = 0;
+        for (let i = 0; i < grid.lums.length; i++) {
+          const c = charFor(grid.lums[i], light, grid.focus[i]);
+          if (c === ' ') continue;
+          let Lr = letters[j++];
+          if (!Lr) {
+            // more cells than letters (small screens): clone a random letter
+            const src = letters[(Math.random() * letters.length) | 0];
+            Lr = { ...src, glyph: rnd() };
+            letters.push(Lr);
+          }
+          const w = light ? (1 - grid.lums[i]) * grid.focus[i] : grid.lums[i];
+          Lr.tx = f.left * dpr + (i % grid.cols) * cw;
+          Lr.ty = f.top * dpr + Math.floor(i / grid.cols) * ch;
+          Lr.c = c;
+          Lr.a = 0.25 + w * 0.75;
+          Lr.lag = Math.random() * 180;
+          Lr.wob = (Math.random() - 0.5) * 90 * dpr;
+          // finish in time: whatever's left after it breaks, minus a little slack
+          Lr.dur = Math.max(700, CRAWL_END - 60 - (Lr.breakAt + Lr.lag));
+        }
       };
 
       boot.classList.add('go');
       const t0 = performance.now();
-      const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-      let shattered = false;
+      const easeIn = (x: number) => x * x * x;
+      const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+      const TAU = 380; // how long a letter keeps its line's momentum after breaking (ms)
+      const endScale = fontPx / rowPx;
+      let prepared = false;
 
       const step = (now: number) => {
         if (lifted) return;
         const t = now - t0;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, W, H);
+        ctx.font = `${rowPx}px ${mono}`;
         ctx.textBaseline = 'top';
 
-        if (t < WORDS) {
-          // the word stream fades in, then holds
-          ctx.font = `${rowPx}px ${mono}`;
+        if (t < SHATTER_START) {
+          // the word stream fades in and flows
           const fade = Math.min(1, t / 250);
           for (const row of rows) {
             ctx.globalAlpha = (row.accent ? 0.85 : 0.5) * fade;
@@ -303,44 +320,63 @@ for (let i = 0; i <= 120; i++) {
             ctx.fillText(row.text, rowX(row, t), row.y);
           }
         } else {
-          if (!shattered) {
-            shatter();
-            shattered = true;
+          if (!prepared) {
+            prepare();
+            prepared = true;
             status.textContent = 'assembling kalash-jain.com';
           }
-          const sinceBurst = t - WORDS;
-          const burst = Math.min(1, sinceBurst / BURST);
-          ctx.font = `${fontPx}px ${mono}`;
-          ctx.fillStyle = accent;
-          for (const p of parts) {
-            // the burst: letters scatter a little from where they were in the words
-            const bx = p.sx + p.vx * burst;
-            const by = p.sy + p.vy * burst;
-            const k = Math.max(0, Math.min(1, (t - p.d) / p.dur));
-            const e = ease(k);
-            const wob = Math.sin(k * Math.PI * 2) * p.wob * (1 - k);
-            const dx = p.tx - bx;
-            const dy = p.ty - by;
+          for (const p of letters) {
+            const sinceStart = t - SHATTER_START;
+            if (t < p.breakAt) {
+              // still part of its word: keep flowing with the line
+              ctx.globalAlpha = p.rowA;
+              ctx.fillStyle = p.col;
+              ctx.setTransform(1, 0, 0, 1, p.x0 + p.vx * sinceStart, p.y);
+              ctx.fillText(p.ch, 0, 0);
+              continue;
+            }
+            // broken off: momentum from the line decays smoothly (no stop, no jump)
+            const u = t - p.breakAt;
+            const bx = p.x0 + p.vx * (p.breakAt - SHATTER_START);
+            const mom = TAU * (1 - Math.exp(-u / TAU));
+            const sx = bx + (p.vx + p.bvx) * mom;
+            const sy = p.y + p.bvy * mom;
+            if (Math.random() < 0.25) p.glyph = rnd(); // a shimmer, not static noise
+
+            if (p.tx === undefined) {
+              // not needed for the portrait: drift and fade away
+              const fadeOut = Math.max(0, 1 - u / 450);
+              if (!fadeOut) continue;
+              ctx.globalAlpha = 0.5 * fadeOut;
+              ctx.fillStyle = muted;
+              ctx.setTransform(1, 0, 0, 1, sx, sy);
+              ctx.fillText(p.glyph, 0, 0);
+              continue;
+            }
+            const k = Math.max(0, Math.min(1, (u - p.lag!) / p.dur!));
+            // ease-in at the start keeps the hand-off from momentum seamless
+            const e = k < 0.5 ? easeIn(k * 2) / 2 : easeInOut(k);
+            const dx = p.tx - sx;
+            const dy = p.ty! - sy;
             const len = Math.hypot(dx, dy) || 1;
-            const x = bx + dx * e + (-dy / len) * wob;
-            const y = by + dy * e + (dx / len) * wob;
-            ctx.globalAlpha = k < 1 ? 0.6 : p.a;
-            ctx.fillText(k < 1 ? glyphs[(Math.random() * glyphs.length) | 0] : p.c, x, y);
-          }
-          // letters that weren't needed fade away where they burst
-          if (sinceBurst < 500) {
-            ctx.globalAlpha = 0.5 * (1 - sinceBurst / 500);
-            ctx.fillStyle = muted;
-            for (const L of leftovers) ctx.fillText(glyphs[(Math.random() * glyphs.length) | 0], L.x, L.y);
+            const wob = Math.sin(k * Math.PI * 2) * p.wob! * (1 - k);
+            const x = sx + dx * e + (-dy / len) * wob;
+            const y = sy + dy * e + (dx / len) * wob;
+            const sc = 1 + (endScale - 1) * e; // shrink from word size to portrait size
+            ctx.globalAlpha = k < 1 ? 0.55 + 0.25 * e : p.a!;
+            ctx.fillStyle = accent;
+            ctx.setTransform(sc, 0, 0, sc, x, y);
+            ctx.fillText(k < 1 ? p.glyph : p.c!, 0, 0);
           }
         }
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalAlpha = 1;
-        if (t < CRAWL_END + 150) raf = requestAnimationFrame(step);
+        if (t < CRAWL_END + 120) raf = requestAnimationFrame(step);
       };
       raf = requestAnimationFrame(step);
 
       // the beats after everything has landed
-      setTimeout(() => (status.textContent = 'ready'), CRAWL_END - 200);
+      setTimeout(() => (status.textContent = 'ready'), CRAWL_END - 150);
       setTimeout(() => boot.classList.add('resolve'), CRAWL_END + HOLD);
       setTimeout(lift, CRAWL_END + HOLD + RESOLVE);
     };
