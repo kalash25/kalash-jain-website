@@ -24,7 +24,7 @@ for (let i = 0; i <= 120; i++) {
       <img src={img.src} alt="" data-boot-img decoding="async" />
     </div>
     <svg class="wave" viewBox="0 0 1000 60" preserveAspectRatio="none"><path d={wave}></path></svg>
-    <p class="status" data-boot-status>assembling kalash-jain.com</p>
+    <p class="status" data-boot-status>thinking in products</p>
   </div>
   <p class="skip">click anywhere to skip</p>
 </div>
@@ -185,16 +185,23 @@ for (let i = 0; i <= 120; i++) {
     setTimeout(lift, 6200); // hard cap even if the image is slow
 
     // Timeline (ms)
-    const SPLASH = 380; // characters burst onto the whole screen
-    const CRAWL_END = 2500; // ...and crawl home by here
-    const HOLD = 450; // the finished ASCII portrait, a beat
-    const RESOLVE = 650; // photo fades in through it, then the curtain lifts
+    const WORDS = 1050; // lines of product words stream across the screen...
+    const BURST = 260; // ...shatter into stray characters that burst outward...
+    const CRAWL_END = 2900; // ...and crawl home to build the portrait by here
+    const HOLD = 350; // the finished ASCII portrait, a beat
+    const RESOLVE = 600; // photo fades in through it, then the curtain lifts
+
+    const WORD_BANK = [
+      'roadmap', 'user research', 'PRD', 'north star', 'OKRs', 'A/B test', 'prioritize', 'ship it',
+      'stakeholders', 'MVP', 'retention', 'discovery', 'jobs to be done', 'trade-offs', 'sprint',
+      'metrics', 'launch', 'iterate', 'customer', 'why?', 'scope', 'backlog', 'insight', 'go-to-market',
+    ];
 
     const run = async () => {
       if (lifted) return;
       const dpr = Math.min(2, devicePixelRatio || 1);
-      canvas.width = innerWidth * dpr;
-      canvas.height = innerHeight * dpr;
+      const W = (canvas.width = innerWidth * dpr);
+      const H = (canvas.height = innerHeight * dpr);
       const ctx = canvas.getContext('2d')!;
       const f = frame.getBoundingClientRect();
       const bitmap = await createImageBitmap(img).catch(() => null);
@@ -204,63 +211,138 @@ for (let i = 0; i <= 120; i++) {
       const ch = (f.height / grid.rows) * dpr;
       const fontPx = Math.min(ch, cw * 1.7) * 0.92;
       const glyphs = RAMP.slice(1) + '/\\<>{}[]01';
+      const mono = '"Geist Mono Variable", ui-monospace, monospace';
+      const muted = css.getPropertyValue('--muted').trim() || '#999';
 
-      // one particle per visible character: random start anywhere, home in the frame
-      type P = { sx: number; sy: number; tx: number; ty: number; d: number; dur: number; wob: number; c: string; a: number };
+      /* Phase 1: rows of product words, alternating direction and speed */
+      const rowPx = Math.max(13, Math.min(19, innerWidth / 70)) * dpr;
+      const rowGap = rowPx * 2.1;
+      const nRows = Math.ceil(H / rowGap) + 1;
+      ctx.font = `${rowPx}px ${mono}`;
+      const charW = ctx.measureText('M').width;
+      const rows = Array.from({ length: nRows }, (_, r) => {
+        const words = [...WORD_BANK].sort(() => Math.random() - 0.5);
+        const text = (words.join('  ·  ') + '  ·  ').repeat(3);
+        return {
+          y: r * rowGap + rowGap * 0.3,
+          text,
+          width: text.length * charW / 3,
+          speed: (0.06 + Math.random() * 0.1) * dpr * (r % 2 ? 1 : -1),
+          phase: Math.random() * 2000,
+          accent: Math.random() < 0.3,
+        };
+      });
+      const rowX = (row: (typeof rows)[number], t: number) => {
+        const off = ((row.phase + t) * row.speed) % row.width;
+        return off > 0 ? off - row.width : off;
+      };
+
+      /* Phase 2 + 3: the portrait's characters, each starting from a letter in the word stream */
+      type P = { sx: number; sy: number; vx: number; vy: number; tx: number; ty: number; d: number; dur: number; wob: number; c: string; a: number };
       const parts: P[] = [];
       for (let i = 0; i < grid.lums.length; i++) {
         const c = charFor(grid.lums[i], light, grid.focus[i]);
         if (c === ' ') continue;
         const w = light ? (1 - grid.lums[i]) * grid.focus[i] : grid.lums[i];
         parts.push({
-          sx: Math.random() * canvas.width,
-          sy: Math.random() * canvas.height,
+          sx: 0, sy: 0, vx: 0, vy: 0,
           tx: f.left * dpr + (i % grid.cols) * cw,
           ty: f.top * dpr + Math.floor(i / grid.cols) * ch,
-          d: SPLASH + Math.random() * 700,
-          dur: 1000 + Math.random() * 700,
-          wob: (Math.random() - 0.5) * 120 * dpr,
+          d: WORDS + BURST + Math.random() * 450,
+          dur: 750 + Math.random() * 450, // last one lands by ~2.96s
+          wob: (Math.random() - 0.5) * 110 * dpr,
           c,
           a: 0.25 + w * 0.75,
         });
       }
+      // when the words shatter, hand every particle the position of a real on-screen letter
+      let leftovers: { x: number; y: number }[] = [];
+      const shatter = () => {
+        const letters: { x: number; y: number }[] = [];
+        for (const row of rows) {
+          const x0 = rowX(row, WORDS);
+          for (let k = 0; k < row.text.length; k++) {
+            const x = x0 + k * charW;
+            if (x < -charW || x > W) continue;
+            const chr = row.text[k];
+            if (chr === ' ' || chr === '·') continue;
+            letters.push({ x, y: row.y });
+          }
+        }
+        letters.sort(() => Math.random() - 0.5);
+        parts.forEach((p, i) => {
+          const L = letters[i % Math.max(1, letters.length)] ?? { x: Math.random() * W, y: Math.random() * H };
+          p.sx = L.x;
+          p.sy = L.y;
+          const ang = Math.random() * Math.PI * 2;
+          const sp = (20 + Math.random() * 60) * dpr;
+          p.vx = Math.cos(ang) * sp;
+          p.vy = Math.sin(ang) * sp;
+        });
+        leftovers = letters.slice(parts.length); // extra letters just fizzle out
+      };
 
       boot.classList.add('go');
       const t0 = performance.now();
       const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-      ctx.font = `${fontPx}px "Geist Mono Variable", ui-monospace, monospace`;
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = accent;
+      let shattered = false;
 
       const step = (now: number) => {
         if (lifted) return;
         const t = now - t0;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const appear = Math.min(1, t / SPLASH);
-        for (const p of parts) {
-          const k = Math.max(0, Math.min(1, (t - p.d) / p.dur));
-          const e = ease(k);
-          // sideways wobble that fades out as it arrives: a crawl, not a straight line
-          const wob = Math.sin(k * Math.PI * 2) * p.wob * (1 - k);
-          const dx = p.tx - p.sx;
-          const dy = p.ty - p.sy;
-          const len = Math.hypot(dx, dy) || 1;
-          const x = p.sx + dx * e + (-dy / len) * wob;
-          const y = p.sy + dy * e + (dx / len) * wob;
-          ctx.globalAlpha = (k < 1 ? 0.35 + 0.4 * appear : p.a) * appear;
-          // stray characters flicker until they land
-          const glyph = k < 1 ? glyphs[(Math.random() * glyphs.length) | 0] : p.c;
-          ctx.fillText(glyph, x, y);
+        ctx.clearRect(0, 0, W, H);
+        ctx.textBaseline = 'top';
+
+        if (t < WORDS) {
+          // the word stream fades in, then holds
+          ctx.font = `${rowPx}px ${mono}`;
+          const fade = Math.min(1, t / 250);
+          for (const row of rows) {
+            ctx.globalAlpha = (row.accent ? 0.85 : 0.5) * fade;
+            ctx.fillStyle = row.accent ? accent : muted;
+            ctx.fillText(row.text, rowX(row, t), row.y);
+          }
+        } else {
+          if (!shattered) {
+            shatter();
+            shattered = true;
+            status.textContent = 'assembling kalash-jain.com';
+          }
+          const sinceBurst = t - WORDS;
+          const burst = Math.min(1, sinceBurst / BURST);
+          ctx.font = `${fontPx}px ${mono}`;
+          ctx.fillStyle = accent;
+          for (const p of parts) {
+            // the burst: letters scatter a little from where they were in the words
+            const bx = p.sx + p.vx * burst;
+            const by = p.sy + p.vy * burst;
+            const k = Math.max(0, Math.min(1, (t - p.d) / p.dur));
+            const e = ease(k);
+            const wob = Math.sin(k * Math.PI * 2) * p.wob * (1 - k);
+            const dx = p.tx - bx;
+            const dy = p.ty - by;
+            const len = Math.hypot(dx, dy) || 1;
+            const x = bx + dx * e + (-dy / len) * wob;
+            const y = by + dy * e + (dx / len) * wob;
+            ctx.globalAlpha = k < 1 ? 0.6 : p.a;
+            ctx.fillText(k < 1 ? glyphs[(Math.random() * glyphs.length) | 0] : p.c, x, y);
+          }
+          // letters that weren't needed fade away where they burst
+          if (sinceBurst < 500) {
+            ctx.globalAlpha = 0.5 * (1 - sinceBurst / 500);
+            ctx.fillStyle = muted;
+            for (const L of leftovers) ctx.fillText(glyphs[(Math.random() * glyphs.length) | 0], L.x, L.y);
+          }
         }
         ctx.globalAlpha = 1;
-        if (t < CRAWL_END + 900) raf = requestAnimationFrame(step);
+        if (t < CRAWL_END + 150) raf = requestAnimationFrame(step);
       };
       raf = requestAnimationFrame(step);
 
       // the beats after everything has landed
-      setTimeout(() => (status.textContent = 'ready'), CRAWL_END + 500);
-      setTimeout(() => boot.classList.add('resolve'), CRAWL_END + 900 + HOLD);
-      setTimeout(lift, CRAWL_END + 900 + HOLD + RESOLVE);
+      setTimeout(() => (status.textContent = 'ready'), CRAWL_END - 200);
+      setTimeout(() => boot.classList.add('resolve'), CRAWL_END + HOLD);
+      setTimeout(lift, CRAWL_END + HOLD + RESOLVE);
     };
 
     const start = () => document.fonts.ready.then(run);
