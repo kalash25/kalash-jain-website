@@ -138,3 +138,27 @@ export const skills = {
     'LLM APIs',
   ],
 };
+
+/* ------------------------------------------------------------------
+   Director's cut: the "behind the scenes" layer.
+   Shown on hover/tap, and all at once when the Director's cut switch is on.
+   Placeholder copy in Kalash's voice: edit freely.
+------------------------------------------------------------------- */
+export const drafts = {
+  headline: 'Software engineer.',
+};
+
+// Phrase in a resume bullet → the story behind it (first match per bullet is annotated)
+export const metricNotes: Record<string, string> = {
+  '10,000+ daily trade scenarios': 'The number I’m proudest of. Ask me how it started.',
+  'from 1 month to 2 days': 'Fewer onboarding meetings for everyone. Including me.',
+  'from ~30% to ~1%': 'Fewer false alarms means people trust the tests again.',
+  'from ~1/hour to 2,000/hour': 'Mapped the manual flows with ops first. The code was the easy part.',
+  'migration of ~800 feeds to AWS': 'Four very different stakeholders. One very long spreadsheet.',
+};
+
+// Project card → napkin-sketch back side
+export const sketches: Record<string, { origin: string; kind: 'kanban' | 'journal' }> = {
+  Runway: { origin: 'Started as a spreadsheet I was tired of updating.', kind: 'kanban' },
+  LifeOS: { origin: 'Started because my journal had opinions but no follow-through.', kind: 'journal' },
+};

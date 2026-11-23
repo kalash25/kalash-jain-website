@@ -51,6 +51,36 @@ if (!reduce) {
       });
     });
 
+    /* Scene 1 (desktop): the hero holds for a beat as you leave it.
+       The photo pushes in, the copy steps back, the name opens up, then it cuts to Experience. */
+    const mm = gsap.matchMedia();
+    mm.add('(min-width: 821px)', () => {
+      const hero = document.querySelector<HTMLElement>('[data-hero]');
+      if (!hero) return;
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: hero, start: 'top top', end: '+=55%', pin: true, scrub: 0.6 },
+      });
+      tl.to(hero.querySelector('.media'), { scale: 1.07, yPercent: -6, ease: 'none' }, 0)
+        .to(hero.querySelector('.copy'), { yPercent: -8, opacity: 0.35, ease: 'none' }, 0)
+        .to(hero.querySelector('.name'), { letterSpacing: '-0.01em', ease: 'none' }, 0);
+    });
+
+    /* Scene 2: project cards are dealt onto the table from a stacked deck */
+    const deck = document.querySelector<HTMLElement>('[data-deck]');
+    if (deck) {
+      const spread = Math.min(140, innerWidth * 0.18);
+      gsap.from(deck.querySelectorAll('[data-card]'), {
+        x: (i: number) => (i % 2 ? -spread : spread),
+        y: 140,
+        rotation: (i: number) => (i % 2 ? 8 : -8),
+        opacity: 0,
+        transformOrigin: '50% 100%',
+        stagger: 0.18,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: deck, start: 'top 88%', end: 'top 45%', scrub: 0.8 },
+      });
+    }
+
     /* Experience timeline: the line draws itself as you scroll past it */
     document.querySelectorAll<HTMLElement>('[data-timeline]').forEach((tl) => {
       const fill = tl.querySelector('[data-timeline-fill]');

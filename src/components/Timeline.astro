@@ -2,6 +2,23 @@
 // A titled section with a scroll-drawn timeline. Used for Experience and Education.
 import SectionHead from './SectionHead.astro';
 import type { Entry } from '../data/site';
+import { metricNotes } from '../data/site';
+
+// Wrap the first known metric in a bullet with a peekable note (the Director's cut layer)
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function annotate(text: string) {
+  for (const [phrase, note] of Object.entries(metricNotes)) {
+    const i = text.indexOf(phrase);
+    if (i < 0) continue;
+    return (
+      esc(text.slice(0, i)) +
+      `<span class="metric" tabindex="0" data-note="${esc(note)}">${esc(phrase)}</span>` +
+      esc(text.slice(i + phrase.length)) +
+      `<span class="dc-note" aria-hidden="true">✎ ${esc(note)}</span>`
+    );
+  }
+  return esc(text);
+}
 
 interface Props {
   id: string;
@@ -67,7 +84,7 @@ const { id, n, label, title, entries } = Astro.props;
                 <h4 class="mono">{g.heading}</h4>
                 <ul class="points">
                   {g.points.map((p) => (
-                    <li>{p}</li>
+                    <li set:html={annotate(p)} />
                   ))}
                 </ul>
               </div>
@@ -267,6 +284,61 @@ const { id, n, label, title, entries } = Astro.props;
     width: 10px;
     height: 1px;
     background: var(--accent);
+  }
+
+  /* Director's cut layer: metrics with the story behind them.
+     (Injected via set:html, so these selectors are global.) */
+  .points :global(.metric) {
+    position: relative;
+    color: var(--ink);
+    text-decoration: underline dotted color-mix(in oklch, var(--accent) 70%, transparent);
+    text-underline-offset: 4px;
+    cursor: help;
+    outline: none;
+  }
+  .points :global(.metric::after) {
+    content: attr(data-note);
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 5;
+    width: max-content;
+    max-width: min(320px, 70vw);
+    padding: 8px 11px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 0.82rem;
+    line-height: 1.35;
+    white-space: normal;
+    opacity: 0;
+    translate: 0 4px;
+    pointer-events: none;
+    transition:
+      opacity 0.2s var(--ease-out),
+      translate 0.2s var(--ease-out);
+  }
+  .points :global(.metric:hover::after),
+  .points :global(.metric:focus-visible::after) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .points :global(.dc-note) {
+    display: none;
+  }
+  :global(html.dc) .points :global(.metric) {
+    text-decoration: underline wavy var(--accent);
+    text-decoration-thickness: 1.5px;
+  }
+  :global(html.dc) .points :global(.metric::after) {
+    display: none;
+  }
+  :global(html.dc) .points :global(.dc-note) {
+    display: block;
+    margin-top: 4px;
+    color: var(--accent);
+    font-style: italic;
+    font-size: 0.92em;
   }
 
   @media (max-width: 760px) {

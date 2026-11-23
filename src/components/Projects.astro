@@ -1,6 +1,6 @@
 ---
 import SectionHead from './SectionHead.astro';
-import { projects } from '../data/site';
+import { projects, sketches } from '../data/site';
 ---
 
 <section id="projects" class="section" aria-labelledby="projects-h">
@@ -15,34 +15,77 @@ import { projects } from '../data/site';
     to fix my own problems.
   </p>
 
-  <div class="cards" data-reveal="stagger">
+  <div class="cards" data-deck>
     {
-      projects.map((p, i) => (
-        <article class="card" data-spotlight>
-          <header>
-            <span class="mono">
-              Project {String(i + 1).padStart(2, '0')}
-            </span>
-            <h3>{p.name}</h3>
-            <p class="kind">{p.kind}</p>
-          </header>
-          <dl>
-            <div>
-              <dt class="mono">Problem</dt>
-              <dd>{p.problem}</dd>
+      projects.map((p, i) => {
+        const sk = sketches[p.name];
+        return (
+          <article class="card" data-card>
+            <div class="inner">
+              {/* front: the finished product */}
+              <div class="face front" data-spotlight>
+                <header>
+                  <span class="mono">Project {String(i + 1).padStart(2, '0')}</span>
+                  <h3>{p.name}</h3>
+                  <p class="kind">{p.kind}</p>
+                </header>
+                <dl>
+                  <div>
+                    <dt class="mono">Problem</dt>
+                    <dd>{p.problem}</dd>
+                  </div>
+                  <div>
+                    <dt class="mono">What I built</dt>
+                    <dd>{p.built}</dd>
+                  </div>
+                </dl>
+                <ul class="stats" aria-label="Results">
+                  {p.stats.map((s) => (
+                    <li>{s}</li>
+                  ))}
+                </ul>
+                {sk && (
+                  <button type="button" class="flip" data-flip aria-expanded="false">
+                    ↻ See the napkin sketch
+                  </button>
+                )}
+              </div>
+
+              {/* back: the napkin sketch it started as */}
+              {sk && (
+                <div class="face back" aria-hidden="true">
+                  <p class="mono">Napkin sketch · v0</p>
+                  {sk.kind === 'kanban' ? (
+                    <svg class="sketch" viewBox="0 0 320 170">
+                      <path d="M12 20 Q60 16 100 19 L101 158 Q56 161 13 157 Z" />
+                      <path d="M112 19 Q160 16 204 20 L203 157 Q158 160 111 158 Z" />
+                      <path d="M216 20 Q262 17 306 19 L305 158 Q260 160 215 157 Z" />
+                      <path d="M22 38 h66 v22 h-66 z M22 70 h66 v22 h-66 z M122 38 h70 v22 h-70 z M226 38 h68 v22 h-68 z M226 70 h68 v22 h-68 z M226 102 h68 v22 h-68 z" />
+                      <path class="accent" d="M88 49 C104 40, 112 44, 120 49 M192 49 C206 40, 214 44, 224 49" />
+                      <text x="16" y="14">to research</text>
+                      <text x="116" y="14">briefed</text>
+                      <text x="220" y="14">talking to</text>
+                    </svg>
+                  ) : (
+                    <svg class="sketch" viewBox="0 0 320 170">
+                      <path d="M14 22 Q70 18 130 22 Q134 40 128 52 Q72 56 16 52 Q11 38 14 22 Z" />
+                      <path d="M28 70 Q88 66 146 70 Q150 86 144 98 Q88 102 30 98 Q25 84 28 70 Z" />
+                      <path d="M14 116 Q66 112 118 116 Q122 132 116 144 Q66 148 16 144 Q11 130 14 116 Z" />
+                      <path class="accent" d="M156 84 C176 80, 186 82, 200 84 M192 78 L201 84 L192 90" />
+                      <path d="M214 150 L306 150 M214 150 L214 30" />
+                      <path class="accent" d="M226 150 v-40 M246 150 v-70 M266 150 v-52 M286 150 v-96" />
+                      <text x="18" y="14">nightly entries</text>
+                      <text x="216" y="22">weekly review</text>
+                    </svg>
+                  )}
+                  <p class="origin">{sk.origin}</p>
+                  <button type="button" class="flip" data-flip-back>↺ Back to the card</button>
+                </div>
+              )}
             </div>
-            <div>
-              <dt class="mono">What I built</dt>
-              <dd>{p.built}</dd>
-            </div>
-          </dl>
-          <ul class="stats" aria-label="Results">
-            {p.stats.map((s) => (
-              <li>{s}</li>
-            ))}
-          </ul>
-        </article>
-      ))
+          </article>
+        );
+      })
     }
   </div>
 </section>
@@ -53,6 +96,7 @@ import { projects } from '../data/site';
     margin: 0 auto;
     padding: clamp(80px, 10vw, 140px) var(--gutter);
     border-top: 1px solid var(--line);
+    overflow-x: clip;
   }
   .intro {
     max-width: 56ch;
@@ -66,9 +110,24 @@ import { projects } from '../data/site';
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
   }
+
+  /* each card is a two-sided object that flips to its napkin sketch */
   .card {
+    perspective: 1400px;
+  }
+  .inner {
+    display: grid;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .card.flipped .inner {
+    transform: rotateY(180deg);
+  }
+  .face {
     --mx: 50%;
     --my: 0%;
+    grid-area: 1 / 1;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -79,12 +138,22 @@ import { projects } from '../data/site';
     background: var(--surface);
     overflow: hidden;
     isolation: isolate;
-    transition:
-      border-color 0.3s var(--ease-out),
-      transform 0.4s var(--ease-out);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: border-color 0.3s var(--ease-out);
   }
-  /* Soft violet light that follows the cursor */
-  .card::before {
+  .back {
+    transform: rotateY(180deg);
+    gap: 14px;
+    background:
+      repeating-linear-gradient(
+        transparent 0 27px,
+        color-mix(in oklch, var(--accent) 12%, transparent) 27px 28px
+      ),
+      var(--surface);
+  }
+  /* soft violet light that follows the cursor (front face) */
+  .front::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -97,11 +166,10 @@ import { projects } from '../data/site';
     opacity: 0;
     transition: opacity 0.4s var(--ease-out);
   }
-  .card:hover {
+  .card:hover .face {
     border-color: color-mix(in oklch, var(--accent) 50%, var(--line));
-    transform: translateY(-4px);
   }
-  .card:hover::before {
+  .card:hover .front::before {
     opacity: 1;
   }
 
@@ -117,7 +185,6 @@ import { projects } from '../data/site';
     margin: 0;
     color: var(--accent);
   }
-
   dl {
     display: grid;
     gap: 16px;
@@ -130,7 +197,6 @@ import { projects } from '../data/site';
   dd {
     margin: 0;
   }
-
   .stats {
     display: flex;
     flex-wrap: wrap;
@@ -148,14 +214,95 @@ import { projects } from '../data/site';
     color: var(--muted);
   }
 
+  .flip {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: 500 0.82rem/1 var(--font-mono);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: color 0.2s var(--ease-out);
+  }
+  .flip:hover {
+    color: var(--accent);
+  }
+  /* Director's cut: the sketch link is highlighted so people know it's there */
+  :global(html.dc) .front .flip {
+    color: var(--accent);
+    text-decoration: underline wavy;
+    text-underline-offset: 5px;
+  }
+
+  .sketch {
+    width: 100%;
+    height: auto;
+    max-height: 210px;
+  }
+  .sketch path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+  }
+  .sketch path.accent {
+    stroke: var(--accent);
+    stroke-width: 2;
+  }
+  .sketch text {
+    fill: var(--muted);
+    font: italic 11px var(--font-body);
+  }
+  /* the sketch draws itself each time the card flips over */
+  .card.flipped .sketch path {
+    transition: stroke-dashoffset 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.35s;
+    stroke-dashoffset: 0;
+  }
+  .origin {
+    margin: 0;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--ink);
+  }
+  .back .mono {
+    margin: 0;
+    font-size: 0.66rem;
+  }
+
   @media (max-width: 760px) {
     .cards {
       grid-template-columns: 1fr;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .card:hover {
-      transform: none;
+    .inner {
+      transition: none;
     }
   }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-card]').forEach((card) => {
+    const front = card.querySelector<HTMLElement>('.front');
+    const back = card.querySelector<HTMLElement>('.back');
+    if (back) back.inert = true;
+    const open = card.querySelector<HTMLButtonElement>('[data-flip]');
+    const close = card.querySelector<HTMLButtonElement>('[data-flip-back]');
+    const set = (flipped: boolean) => {
+      card.classList.toggle('flipped', flipped);
+      open?.setAttribute('aria-expanded', String(flipped));
+      if (front) front.inert = flipped;
+      if (back) {
+        back.inert = !flipped;
+        back.setAttribute('aria-hidden', String(!flipped));
+      }
+      (flipped ? close : open)?.focus({ preventScroll: true });
+    };
+    open?.addEventListener('click', () => set(true));
+    close?.addEventListener('click', () => set(false));
+  });
+</script>

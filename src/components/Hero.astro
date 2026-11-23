@@ -1,7 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import portrait from '../assets/portrait-dark.webp';
-import { links, stickers } from '../data/site';
+import { links, stickers, drafts } from '../data/site';
 
 const name = 'Kalash Jain';
 const letters = [...name];
@@ -30,7 +30,8 @@ const letters = [...name];
       </svg>
     </div>
 
-    <p class="line reveal" style="--d:1">
+    <p class="line reveal" style="--d:1" data-peek>
+      <span class="draft" aria-hidden="true"><del>{drafts.headline}</del><span class="draft-tag">v1</span></span>
       Product thinker<br />
       <em>with an engineer's toolkit.</em>
     </p>
@@ -60,7 +61,7 @@ const letters = [...name];
   <div class="media">
     <div class="frame">
       <div class="tilt" data-tilt>
-      <figure class="photo">
+      <figure class="photo" data-source-wrap>
         <Picture
           src={portrait}
           formats={['avif', 'webp']}
@@ -70,6 +71,8 @@ const letters = [...name];
           loading="eager"
           fetchpriority="high"
         />
+        <canvas class="source" data-source aria-hidden="true"></canvas>
+        <span class="vs-label" aria-hidden="true">view source</span>
       </figure>
       <svg class="slither" data-slither aria-hidden="true">
         <path></path>
@@ -176,6 +179,83 @@ const letters = [...name];
   .line em {
     font-style: normal;
     color: var(--accent);
+  }
+
+  /* Director's cut layer: the headline's earlier draft, struck through above it */
+  .draft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.62em;
+    color: var(--muted);
+    transition:
+      height 0.45s var(--ease-out),
+      opacity 0.35s var(--ease-out);
+  }
+  .draft del {
+    text-decoration: none;
+    background: linear-gradient(var(--accent), var(--accent)) 0 55% / 0% 2px no-repeat;
+    transition: background-size 0.5s var(--ease-out) 0.15s;
+  }
+  .draft-tag {
+    font-family: var(--font-mono);
+    font-size: 0.55em;
+    letter-spacing: 0.06em;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .line:hover .draft,
+  :global(html.dc) .draft {
+    height: 1.35em;
+    opacity: 1;
+  }
+  .line:hover .draft del,
+  :global(html.dc) .draft del {
+    background-size: 100% 2px;
+  }
+
+  /* "View source": the photo as ASCII, on hover/tap */
+  .source {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out);
+    pointer-events: none;
+  }
+  .photo {
+    position: relative;
+    cursor: crosshair;
+  }
+  .photo.peek .source {
+    opacity: 1;
+  }
+  .vs-label {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: oklch(0 0 0 / 0.55);
+    color: oklch(0.97 0.006 285);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .photo:hover .vs-label,
+  .photo.peek .vs-label,
+  :global(html.dc) .vs-label {
+    opacity: 1;
+  }
+  .photo.peek .vs-label::before {
+    content: '</> ';
   }
   .lede {
     max-width: 54ch;
@@ -533,12 +613,21 @@ const letters = [...name];
     if (heroVisible || e < INTRO_MS) raf = requestAnimationFrame(frame);
     else raf = 0;
   }
+  // Wait for the ASCII boot overlay (if it's playing) before the hero's own intro starts
+  const booting = root.dataset.boot === 'running';
+  const bootReady = new Promise<void>((res) => {
+    if (!booting) return res();
+    addEventListener('boot:done', () => res(), { once: true });
+    setTimeout(res, 5200); // never wait forever
+  });
+  let begun = false;
+
   const run = () => {
-    if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
+    if (begun && !raf && !document.hidden) raf = requestAnimationFrame(frame);
   };
 
   // Content must never wait on animation frames
-  setTimeout(reveal, INTRO_MS);
+  bootReady.then(() => setTimeout(reveal, INTRO_MS));
 
   if (path && svg) {
     if (reduce) {
@@ -546,10 +635,14 @@ const letters = [...name];
       reveal();
     } else {
       // Start once the display font is in (max 0.5s), so the name never swaps mid-animation
-      Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 500))]).then(() => {
-        start = performance.now();
-        run();
-      });
+      bootReady
+        .then(() => Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 500))]))
+        .then(() => {
+          // after the boot, the wave is already "drawn", so jump straight to the name rising
+          start = performance.now() - (booting ? 450 : 0);
+          begun = true;
+          run();
+        });
       addEventListener('keydown', skip, { once: true });
       addEventListener('pointerdown', skip, { once: true });
 
@@ -691,6 +784,47 @@ const letters = [...name];
   }
   if (root.classList.contains('intro-done')) runSlithers();
   else addEventListener('intro:done', runSlithers, { once: true });
+
+  /* ---------------------------------------------------------------
+     View source: hover (or tap) the photo to see it as ASCII.
+  ---------------------------------------------------------------- */
+  const srcWrap = document.querySelector<HTMLElement>('[data-source-wrap]');
+  const srcCanvas = document.querySelector<HTMLCanvasElement>('[data-source]');
+  let srcReady = false;
+  const paintSource = async () => {
+    if (srcReady || !srcWrap || !srcCanvas) return;
+    const img = srcWrap.querySelector('img');
+    if (!img) return;
+    await img.decode().catch(() => {});
+    const { buildGrid, drawGrid, fitCanvas } = await import('../scripts/ascii');
+    fitCanvas(srcCanvas);
+    const css = getComputedStyle(root);
+    // real pixels, not the density-corrected size of the responsive <img>
+    const bitmap = await createImageBitmap(img).catch(() => null);
+    drawGrid(srcCanvas, buildGrid(bitmap ?? img, srcCanvas.width, srcCanvas.height, 58), {
+      bg: css.getPropertyValue('--bg').trim() || '#000',
+      color: css.getPropertyValue('--accent').trim() || '#9f8cff',
+    });
+    srcReady = true;
+  };
+  if (srcWrap) {
+    const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (fine) {
+      srcWrap.addEventListener('pointerenter', () => {
+        paintSource();
+        srcWrap.classList.add('peek');
+      });
+      srcWrap.addEventListener('pointerleave', () => srcWrap.classList.remove('peek'));
+    } else {
+      srcWrap.addEventListener('click', () => {
+        paintSource();
+        srcWrap.classList.toggle('peek');
+      });
+    }
+    addEventListener('resize', () => (srcReady = false));
+    // re-colour if the theme flips
+    new MutationObserver(() => (srcReady = false)).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  }
 
   /* Mouse-only touches: photo tilt, and name letters that lift near the cursor */
   if (!reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {

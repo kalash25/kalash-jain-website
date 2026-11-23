@@ -1,0 +1,90 @@
+<!--
+  Director's cut: one switch that reveals the "behind the scenes" layer everywhere
+  (earlier drafts, the story behind numbers, napkin sketches, margin notes).
+  Off = the clean theatrical release. Remembered for the session.
+-->
+<button class="dc" type="button" aria-pressed="false" data-dc title="Show the behind-the-scenes layer">
+  <span class="track" aria-hidden="true"><span class="knob"></span></span>
+  <span class="label">Director's cut</span>
+</button>
+
+<style>
+  .dc {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    height: 40px;
+    padding: 0 14px 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: 500 0.82rem/1 var(--font-body);
+    cursor: pointer;
+    transition:
+      border-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+  .dc:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .track {
+    position: relative;
+    width: 26px;
+    height: 15px;
+    border-radius: 999px;
+    background: var(--line);
+    transition: background-color 0.3s var(--ease-out);
+  }
+  .knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--ink);
+    transition: translate 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  :global(html.dc) .dc {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  :global(html.dc) .track {
+    background: var(--accent);
+  }
+  :global(html.dc) .knob {
+    translate: 11px 0;
+    background: var(--accent-ink);
+  }
+  @media (max-width: 560px) {
+    .label {
+      display: none;
+    }
+    .dc {
+      padding: 0 10px;
+    }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-dc]');
+  const root = document.documentElement;
+  const sync = () => btn?.setAttribute('aria-pressed', String(root.classList.contains('dc')));
+  sync();
+  btn?.addEventListener('click', () => {
+    const on = !root.classList.contains('dc');
+    root.classList.toggle('dc', on);
+    try {
+      sessionStorage.setItem('dc', on ? '1' : '0');
+    } catch {}
+    sync();
+    dispatchEvent(new Event('dc:change'));
+    dispatchEvent(
+      new CustomEvent('toast', {
+        detail: on ? "Director's cut: on. Behind the scenes unlocked." : 'Back to the theatrical release.',
+      }),
+    );
+  });
+</script>

@@ -1,0 +1,215 @@
+---
+// ASCII boot: before the page, the portrait assembles from characters,
+// resolves into the photo, then the curtain lifts. ~2.5s, once per session,
+// click or any key to skip, skipped entirely for reduced motion.
+import { getImage } from 'astro:assets';
+import portrait from '../assets/portrait-dark.webp';
+
+const img = await getImage({ src: portrait, width: 520, format: 'webp' });
+
+let wave = '';
+for (let i = 0; i <= 120; i++) {
+  const x = i / 120;
+  const env = Math.pow(Math.sin(Math.PI * x), 1.4);
+  const s = Math.sin(x * 38 + 1.2) * 0.5 + Math.sin(x * 91 - 0.7) * 0.3 + Math.sin(x * 17 + 2) * 0.2;
+  wave += `${i ? 'L' : 'M'}${(x * 1000).toFixed(1)} ${(30 - s * env * 22).toFixed(1)}`;
+}
+---
+
+<div class="boot" data-boot-overlay aria-hidden="true">
+  <div class="stage">
+    <div class="frame">
+      <canvas data-boot-canvas></canvas>
+      <img src={img.src} alt="" data-boot-img decoding="async" />
+    </div>
+    <svg class="wave" viewBox="0 0 1000 60" preserveAspectRatio="none"><path d={wave}></path></svg>
+    <p class="status" data-boot-status>rendering kalash-jain.com</p>
+  </div>
+  <p class="skip">click anywhere to skip</p>
+</div>
+
+<!-- Runs immediately: repeat visits and reduced motion never see the overlay -->
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var seen = false;
+    try {
+      seen = sessionStorage.getItem('booted') === '1';
+    } catch (e) {}
+    if (seen || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      root.dataset.boot = 'skipped';
+    } else {
+      root.dataset.boot = 'running';
+    }
+  })();
+</script>
+
+<style>
+  .boot {
+    display: none;
+  }
+  /* Only shown when JS is running and this is the first visit this session */
+  :global(html.js[data-boot='running']) .boot {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.75s cubic-bezier(0.76, 0, 0.24, 1);
+    /* safety net: never block the page for more than 5s */
+    animation: boot-away 0.01s 5s forwards;
+  }
+  :global(html.js[data-boot='running']) .boot.lift {
+    clip-path: inset(0 0 100% 0);
+  }
+  @keyframes boot-away {
+    to {
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  .stage {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+  }
+  .frame {
+    position: relative;
+    width: min(56vw, 36vh, 300px);
+    aspect-ratio: 4 / 5;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  canvas,
+  .frame img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .frame img {
+    object-fit: cover;
+    object-position: 50% 30%;
+    opacity: 0;
+    transition: opacity 0.55s ease;
+  }
+  .boot.resolve .frame img {
+    opacity: 1;
+  }
+  .wave {
+    width: min(70vw, 340px);
+    height: 40px;
+    overflow: visible;
+  }
+  .wave path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 1600;
+    stroke-dashoffset: 1600;
+    transition: stroke-dashoffset 1.3s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .boot.go .wave path {
+    stroke-dashoffset: 0;
+  }
+  .status {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .status::after {
+    content: '';
+    display: inline-block;
+    width: 0.6em;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: -0.15em;
+    background: var(--accent);
+    animation: caret 0.8s steps(1) infinite;
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+  .skip {
+    position: absolute;
+    bottom: 22px;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: var(--muted);
+    opacity: 0.7;
+  }
+</style>
+
+<script>
+  import { buildGrid, drawGrid, fitCanvas } from '../scripts/ascii';
+
+  const root = document.documentElement;
+  const boot = document.querySelector<HTMLElement>('[data-boot-overlay]');
+
+  const finish = () => {
+    root.dataset.boot = 'done';
+    try {
+      sessionStorage.setItem('booted', '1');
+    } catch {}
+    dispatchEvent(new Event('boot:done'));
+    boot?.remove();
+  };
+
+  if (!boot || root.dataset.boot !== 'running') {
+    boot?.remove();
+    dispatchEvent(new Event('boot:done'));
+  } else {
+    const canvas = boot.querySelector<HTMLCanvasElement>('[data-boot-canvas]')!;
+    const img = boot.querySelector<HTMLImageElement>('[data-boot-img]')!;
+    const status = boot.querySelector<HTMLElement>('[data-boot-status]')!;
+    const css = getComputedStyle(root);
+    const accent = css.getPropertyValue('--accent').trim() || '#9f8cff';
+    const bg = css.getPropertyValue('--bg').trim() || '#000';
+    let lifted = false;
+
+    const lift = () => {
+      if (lifted) return;
+      lifted = true;
+      boot.classList.add('resolve', 'lift');
+      setTimeout(finish, 780);
+    };
+    addEventListener('pointerdown', lift, { once: true });
+    addEventListener('keydown', lift, { once: true });
+    setTimeout(lift, 4200); // hard cap even if the image is slow
+
+    const run = () => {
+      if (lifted) return;
+      boot.classList.add('go');
+      fitCanvas(canvas);
+      const grid = buildGrid(img, canvas.width, canvas.height, 46);
+      const t0 = performance.now();
+      const ASSEMBLE = 1150;
+      const step = (now: number) => {
+        if (lifted) return;
+        const p = Math.min(1, (now - t0) / ASSEMBLE);
+        drawGrid(canvas, grid, { progress: 1 - Math.pow(1 - p, 2), bg, color: accent });
+        if (p < 1) requestAnimationFrame(step);
+        else {
+          status.textContent = 'ready';
+          boot.classList.add('resolve'); // characters resolve into the photo
+          setTimeout(lift, 650);
+        }
+      };
+      requestAnimationFrame(step);
+    };
+    if (img.complete && img.naturalWidth) document.fonts.ready.then(run);
+    else img.addEventListener('load', () => document.fonts.ready.then(run), { once: true });
+  }
+</script>
