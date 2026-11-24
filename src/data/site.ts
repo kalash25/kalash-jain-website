@@ -166,8 +166,7 @@ export const sketches: Record<string, { origin: string; kind: 'kanban' | 'journa
 /* ------------------------------------------------------------------
    The story so far: the flight-path map.
    Each stop is a point on the route and a chapter card.
-   [Square brackets] are placeholders for Kalash to fill in, and the
-   lon/lat of the first two stops should move to the real places.
+   Not every move is here, just the ones that tell the story.
 ------------------------------------------------------------------- */
 export type Stop = {
   year: string;
@@ -179,45 +178,59 @@ export type Stop = {
 
 export const story: Stop[] = [
   {
-    year: '[birth year]',
-    place: '[US city], USA',
+    year: '2001',
+    place: 'Atlanta, Georgia',
     title: 'Born in the States',
-    line: "Chapter one. I didn't stay long.",
-    at: [-77, 39], // placeholder: move to the real city
+    line: 'Atlanta first, then a quick stint in Detroit. All before I turned three.',
+    at: [-84.39, 33.75],
   },
   {
-    year: '[year moved]',
-    place: '[hometown], India',
+    year: '2004',
+    place: 'Gurgaon',
     title: 'Moved to India',
-    line: 'Where I actually grew up. [One line about growing up there.]',
-    at: [77.2, 28.6], // placeholder: move to the real hometown
+    line: 'Landed at three and stayed eleven years. This is where I grew up.',
+    at: [77.03, 28.46],
+  },
+  {
+    year: '2015',
+    place: 'Pune',
+    title: 'First lines of code',
+    line: 'Ninth and tenth grade. Started tinkering with code and fell hard for basketball.',
+    at: [73.86, 18.52],
+  },
+  {
+    year: '2017',
+    place: 'Chandigarh',
+    title: 'Captain, and C++',
+    line: 'Captained the school basketball team, ground through engineering prep, and wrote a lot more C++.',
+    at: [76.78, 30.73],
   },
   {
     year: '2019',
     place: 'Chandigarh',
     title: 'Punjab Engineering College',
-    line: 'Computer science by day, Editor-in-Chief of the English Editorial Board by night.',
+    line: 'Computer science, same city. Also Editor-in-Chief of the English Editorial Board.',
     at: [76.78, 30.73],
   },
   {
     year: '2022',
-    place: 'Mumbai',
+    place: 'Bangalore',
     title: 'Interned at JPMorgan Chase',
-    line: 'Six months, mid-degree. They asked me back.',
-    at: [72.88, 19.08],
+    line: 'Six months in my sixth semester. They asked me back.',
+    at: [77.59, 12.97],
   },
   {
     year: '2023',
-    place: 'Mumbai & Bangalore',
+    place: 'Mumbai',
     title: 'Engineer at JPMorgan Chase',
-    line: "Three years of shipping, and slowly becoming the person asking 'why are we building this?'",
-    at: [77.59, 12.97],
+    line: "SDE I, then SDE II. Three years of shipping, and slowly becoming the person asking 'why are we building this?'",
+    at: [72.88, 19.08],
   },
   {
     year: '2026',
     place: 'Los Angeles',
     title: 'UCLA Anderson',
-    line: 'Left JPMorgan for an MBA. Full circle: back in the States.',
+    line: 'Left JPMorgan for an MBA. Twenty-two years later, back in the States.',
     at: [-118.24, 34.05],
   },
 ];
