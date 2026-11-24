@@ -96,7 +96,8 @@ export function buildGrid(img: HTMLImageElement | ImageBitmap, boxW: number, box
 
 /** Size a canvas to its CSS box at device pixel ratio; returns the 2D context. */
 export function fitCanvas(canvas: HTMLCanvasElement) {
-  const r = canvas.getBoundingClientRect();
+  // layout size, not on-screen size (the Explore board may be zoomed)
+  const r = { width: canvas.clientWidth, height: canvas.clientHeight };
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   canvas.width = Math.max(1, Math.round(r.width * dpr));
   canvas.height = Math.max(1, Math.round(r.height * dpr));

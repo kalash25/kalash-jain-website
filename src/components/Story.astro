@@ -358,6 +358,11 @@ const chapters = [...story, { ...storyNext, place: '', at: story[story.length - 
         translate 0.45s var(--ease-out) 0.1s,
         visibility 0s;
     }
+    /* nothing to go back to on the first chapter, and no next stop after "to be continued" */
+    .story.first [data-prev],
+    .story.ended [data-next] {
+      display: none;
+    }
     :global(html.js) [data-mode='manual'] .ctrl {
       display: flex;
       gap: 8px;

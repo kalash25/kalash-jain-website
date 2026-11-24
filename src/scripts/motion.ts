@@ -27,8 +27,10 @@ let lenisRef: Lenis | null = null;
 
 function park() {
   for (const a of reveals) {
-    a.scrollTrigger?.kill();
+    // finish the animation first, then drop its trigger WITHOUT killing the animation
+    // (a plain kill() takes the animation with it, leaving content stuck at opacity 0)
     a.progress(1);
+    a.scrollTrigger?.kill(false, true);
   }
   for (const a of [...scrubbed, ...startParked]) {
     a.scrollTrigger?.disable(false);
@@ -167,8 +169,8 @@ if (!reduce) {
             });
             reveals.push(tw);
             if (roaming()) {
-              tw.scrollTrigger?.kill();
               tw.progress(1);
+              tw.scrollTrigger?.kill(false, true);
             }
             return tw;
           },

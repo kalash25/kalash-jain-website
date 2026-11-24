@@ -261,8 +261,11 @@ html.roam-ready [data-world] > #top {
   border-color: color-mix(in oklch, var(--accent) 45%, var(--line));
   overflow: clip;
 }
+/* Contact keeps its solid violet block (its text is dark-on-violet), and is a compact card */
 html.roam-ready [data-world] > #contact {
   border-color: transparent;
+  background: var(--block);
+  padding: 72px 64px 64px;
 }
 /* labels above islands, readable once you zoom out */
 .roam-labels span {

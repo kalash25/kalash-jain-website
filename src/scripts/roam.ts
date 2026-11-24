@@ -80,7 +80,9 @@ function init(stage: HTMLElement, world: HTMLElement) {
       .sort((a, b) => a.lc[1] - b.lc[1]);
     for (const { el, id, lc } of byCol) {
       const c = lc[0];
-      const w = c === 1 && id !== 'top' && !phone ? Math.min(1100, W) : colW[c];
+      // centre column cards are narrower than the hero; contact and the footer are compact cards
+      const compact = id === 'contact' || id === 'footer';
+      const w = phone ? colW[c] : c === 1 && id !== 'top' ? Math.min(compact ? 860 : 1100, W) : colW[c];
       el.style.width = `${w}px`;
       el.style.left = `${colX[c] + (colW[c] - w) / 2}px`;
       el.style.top = `${colY[c]}px`;
@@ -286,11 +288,15 @@ function init(stage: HTMLElement, world: HTMLElement) {
   let pinch0 = 0;
   let glide = 0;
   let air: ReturnType<typeof sfx.wind> | null = null;
+  // things with their own drag never pan the board; links and buttons don't with a mouse
+  // (on touch a tap still works: panning only starts once the finger moves)
+  const ownsDrag = (t: EventTarget | null) => (t as Element)?.closest?.('[data-story-map], [data-sticker]');
   const interactive = (t: EventTarget | null) =>
-    (t as Element)?.closest?.('a, button, input, textarea, select, label, [data-story-map], [data-sticker], .metric, [data-copy]');
+    (t as Element)?.closest?.('a, button, input, textarea, select, label, .metric, [data-copy]');
 
   stage.addEventListener('pointerdown', (e) => {
     if (!active) return;
+    if (ownsDrag(e.target)) return;
     if (interactive(e.target) && e.pointerType === 'mouse') return;
     if (e.button && e.pointerType === 'mouse') return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });

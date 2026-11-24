@@ -39,7 +39,8 @@ export function mountStory(el: HTMLElement): StoryHandle {
   let wasFlying = false;
 
   const vb = () => {
-    const r = svg.getBoundingClientRect();
+    // layout size, not on-screen size (the Explore board may be zoomed out)
+    const r = { width: svg.clientWidth, height: svg.clientHeight };
     const aspect = r.height / Math.max(1, r.width);
     const mobile = r.width < 640;
     // never zoom out so far that the map is a thin band in a tall frame
@@ -88,6 +89,7 @@ export function mountStory(el: HTMLElement): StoryHandle {
     stops.forEach((s, j) => s.classList.toggle('reached', j <= Math.min(i, pts.length - 1)));
     if (counter) counter.textContent = `${String(i + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}`;
     el.classList.toggle('ended', i >= N - 1);
+    el.classList.toggle('first', i === 0);
     if (!first) sfx.tick(0.35 + (i / N) * 0.5, 0.06);
   };
 
